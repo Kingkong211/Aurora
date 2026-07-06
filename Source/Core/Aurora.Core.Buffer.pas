@@ -20,8 +20,7 @@ interface
 
 uses
   System.SysUtils,
-  Aurora.Core.Types,
-  Aurora.Core.Interfaces;
+  Aurora.Core.Types;
 
 type
   /// <summary>
@@ -31,7 +30,7 @@ type
   /// SampleCount is measured in sample frames, not scalar float values.
   /// For stereo audio, one sample frame contains two Float32 values.
   /// </remarks>
-  TSignalBuffer = class(TInterfacedObject, ISignalProvider)
+  TSignalBuffer = class
   private
     FDescriptor: TSignalDescriptor;
     FData: TArray<Single>;
