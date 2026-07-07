@@ -19,25 +19,18 @@ var
 
 begin
   try
-   { if ParamCount < 1 then
-    begin
-      Writeln('Usage: Test.MFDecoder.exe <audio-file>');
-      Exit;
-    end; }
 
     if ParamCount < 1 then
   FileName := 'D:\Music_At_Work\MacThuy\MacThuy_Bi\ChieuTim.wav'
 else
   FileName := ParamStr(1);
 
-   // FileName := 'D:\Music_At_Work\MacThuy\MacThuy_Bi\ChieuTim.wav';// ParamStr('D:\Music_At_Work\MacThuy\MacThuy_Bi');
 
-   // OleCheck(CoInitializeEx(nil, COINIT_MULTITHREADED));
-   //CoInitialize(nil);
+
    if Failed(CoInitialize(nil)) then
   raise Exception.Create('CoInitialize failed.');
     try
-     // OleCheck(MFStartup(MF_VERSION, MFSTARTUP_FULL));
+
      if Failed(MFStartup(MF_VERSION, MFSTARTUP_FULL)) then
   raise Exception.Create('MFStartup failed.');
       try
@@ -79,4 +72,4 @@ else
   Writeln('Press ENTER to exit...');
   Readln;
 end.
-end.
+//end.
