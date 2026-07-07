@@ -66,6 +66,7 @@ begin
   inherited;
 end;
 
+{
 procedure TMFAudioDecoder.CheckHR(
   const AHR: HRESULT;
   const AMessage: string);
@@ -74,6 +75,19 @@ begin
   begin
     FState := TMFDecoderState.Error;
     raise EOleException.Create(AMessage, AHR, '', '', 0);
+  end;
+end;  }
+procedure TMFAudioDecoder.CheckHR(
+  const AHR: HRESULT;
+  const AMessage: string);
+begin
+  if Failed(AHR) then
+  begin
+    FState := TMFDecoderState.Error;
+    raise Exception.CreateFmt(
+      '%s HRESULT: 0x%.8x',
+      [AMessage, Cardinal(AHR)]
+    );
   end;
 end;
 
@@ -133,7 +147,7 @@ begin
   CheckHR(
     FReader.SetCurrentMediaType(
       MF_SOURCE_READER_FIRST_AUDIO_STREAM,
-      nil,
+      0,
       MediaType
     ),
     'Could not configure source reader for Float32 audio.'
@@ -142,7 +156,7 @@ begin
   CheckHR(
     FReader.GetCurrentMediaType(
       MF_SOURCE_READER_FIRST_AUDIO_STREAM,
-      CurrentType
+      @CurrentType
     ),
     'Could not read current audio media type.'
   );
@@ -168,7 +182,7 @@ end;
 procedure TMFAudioDecoder.RequireOpen;
 begin
   if (FState <> TMFDecoderState.Open) or (FReader = nil) then
-    raise EInvalidOperation.Create('Decoder is not open.');
+    raise Exception.Create('Decoder is not open.');
 end;
 
 function TMFAudioDecoder.DecodeAll: TSignalBuffer;
@@ -179,9 +193,9 @@ var
   TimeStamp: LONGLONG;
   Sample: IMFSample;
   MediaBuffer: IMFMediaBuffer;
-  Data: PByte;
-  MaxLength: DWORD;
-  CurrentLength: DWORD;
+Data: PByte;
+MaxLength: DWORD;
+CurrentLength: DWORD;
   ScalarCount: Integer;
   SampleFrameCount: Integer;
 begin
@@ -201,7 +215,7 @@ begin
           @StreamIndex,
           @Flags,
           @TimeStamp,
-          Sample
+          @Sample
         ),
         'Could not read audio sample.'
       );
@@ -212,20 +226,19 @@ begin
       if Sample = nil then
         Continue;
 
-      CheckHR(
-        Sample.ConvertToContiguousBuffer(MediaBuffer),
-        'Could not convert audio sample to contiguous buffer.'
-      );
+CheckHR(
+  Sample.ConvertToContiguousBuffer(@MediaBuffer),
+  'Could not convert audio sample to contiguous buffer.'
+);
 
       Data := nil;
       MaxLength := 0;
       CurrentLength := 0;
 
-      CheckHR(
-        MediaBuffer.Lock(Data, MaxLength, CurrentLength),
-        'Could not lock audio buffer.'
-      );
-
+ CheckHR(
+  MediaBuffer.Lock(Data, @MaxLength, @CurrentLength),
+  'Could not lock audio buffer.'
+);
       try
         if CurrentLength > 0 then
         begin
@@ -233,7 +246,9 @@ begin
           SampleFrameCount := ScalarCount div FInfo.Audio.Signal.ChannelCount;
 
           if SampleFrameCount > 0 then
-            Buffer.AppendFloat32(PSingle(Data), SampleFrameCount);
+          Buffer.AppendFloat32(System.PSingle(Data), SampleFrameCount);
+          // Buffer.AppendFloat32(PSingle(Data), SampleFrameCount);
+           //Buffer.AppendFloat32(PSingle(Data), SampleFrameCount);
         end;
       finally
         MediaBuffer.Unlock;
