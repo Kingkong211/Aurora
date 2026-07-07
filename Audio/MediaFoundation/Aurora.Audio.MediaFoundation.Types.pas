@@ -19,6 +19,7 @@ interface
 {$SCOPEDENUMS ON}
 
 uses
+  Aurora.Core.Types,
   Aurora.Audio.Types;
 
 type
@@ -52,7 +53,7 @@ implementation
 class function TMFDecoderInfo.Empty: TMFDecoderInfo;
 begin
   Result.FileName := '';
-  Result.Audio.Signal := Aurora.Core.Types.TSignalDescriptor.Empty;
+  Result.Audio.Signal := TSignalDescriptor.Empty;
   Result.Audio.Layout := TAudioSampleLayout.Unknown;
   Result.DurationSeconds := 0.0;
 end;
