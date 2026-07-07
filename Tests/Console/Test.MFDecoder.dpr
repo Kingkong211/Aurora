@@ -19,13 +19,18 @@ var
 
 begin
   try
-    if ParamCount < 1 then
+   { if ParamCount < 1 then
     begin
       Writeln('Usage: Test.MFDecoder.exe <audio-file>');
       Exit;
-    end;
+    end; }
 
-    FileName := ParamStr(1);
+    if ParamCount < 1 then
+  FileName := 'D:\Music_At_Work\MacThuy\MacThuy_Bi\ChieuTim.wav'
+else
+  FileName := ParamStr(1);
+
+   // FileName := 'D:\Music_At_Work\MacThuy\MacThuy_Bi\ChieuTim.wav';// ParamStr('D:\Music_At_Work\MacThuy\MacThuy_Bi');
 
    // OleCheck(CoInitializeEx(nil, COINIT_MULTITHREADED));
    //CoInitialize(nil);
@@ -59,11 +64,19 @@ begin
     finally
       CoUninitialize;
     end;
-  except
+   except
     on E: Exception do
     begin
       Writeln('ERROR: ', E.ClassName, ': ', E.Message);
+      Writeln;
+      Writeln('Press ENTER to exit...');
+      Readln;
       Halt(1);
     end;
   end;
+
+  Writeln;
+  Writeln('Press ENTER to exit...');
+  Readln;
+end.
 end.
