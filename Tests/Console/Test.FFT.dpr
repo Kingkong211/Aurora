@@ -7,7 +7,8 @@ uses
   System.Math,
   Aurora.Numerics.Complex in '..\..\Source\Numerics\Aurora.Numerics.Complex.pas',
   Aurora.DSP.FFT.Plan in '..\..\Source\DSP\FFT\Aurora.DSP.FFT.Plan.pas',
-  Aurora.DSP.FFT.Radix2 in '..\..\Source\DSP\FFT\Aurora.DSP.FFT.Radix2.pas';
+  Aurora.DSP.FFT.Radix2 in '..\..\Source\DSP\FFT\Aurora.DSP.FFT.Radix2.pas',
+  Aurora.DSP.Magnitude in '..\..\Source\DSP\Aurora.DSP.Magnitude.pas';
 
 const
   SampleRate = 44100;

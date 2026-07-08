@@ -176,6 +176,7 @@
         <DCCReference Include="..\..\Source\Numerics\Aurora.Numerics.Complex.pas"/>
         <DCCReference Include="..\..\Source\DSP\FFT\Aurora.DSP.FFT.Plan.pas"/>
         <DCCReference Include="..\..\Source\DSP\FFT\Aurora.DSP.FFT.Radix2.pas"/>
+        <DCCReference Include="..\..\Source\DSP\Aurora.DSP.Magnitude.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
