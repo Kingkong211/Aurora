@@ -47,6 +47,8 @@ type
       const ACount: Integer);
 
     property Style: TSpectrumStyle read FStyle write FStyle;
+    function GetFreeSpace: Integer;
+    property FreeSpace: Integer read GetFreeSpace;
   end;
 
 implementation
@@ -64,6 +66,11 @@ constructor TCanvasSpectrumRenderer.Create;
 begin
   inherited Create;
   FStyle := TSpectrumStyle.Default;
+end;
+
+function TFloatRingBuffer.GetFreeSpace: Integer;
+begin
+  Result := FCapacity - FCount;
 end;
 
 function TCanvasSpectrumRenderer.Clamp01(const AValue: Single): Single;
