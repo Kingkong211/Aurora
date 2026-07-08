@@ -19,6 +19,9 @@ uses
   Aurora.DSP.FFT.Plan;
 
 type
+  TComplex32Array = array[0..MaxInt div SizeOf(TComplex32) - 1] of TComplex32;
+  PComplex32Array = ^TComplex32Array;
+
   TRadix2FFT = class
   public
     class procedure Execute(
@@ -53,6 +56,7 @@ var
   EvenValue: TComplex32;
   OddValue: TComplex32;
   Scale: Single;
+  Data: PComplex32Array;
 begin
   if APlan = nil then
     raise EArgumentNilException.Create('FFT plan must not be nil.');
@@ -61,6 +65,7 @@ begin
     raise EArgumentNilException.Create('FFT buffer must not be nil.');
 
   Size := APlan.Size;
+  Data := PComplex32Array(ABuffer);
 
   { Bit-reversal permutation. }
   for Index := 0 to Size - 1 do
@@ -69,9 +74,9 @@ begin
 
     if SwapIndex > Index then
     begin
-      Temp := ABuffer[Index];
-      ABuffer[Index] := ABuffer[SwapIndex];
-      ABuffer[SwapIndex] := Temp;
+      Temp := Data^[Index];
+      Data^[Index] := Data^[SwapIndex];
+      Data^[SwapIndex] := Temp;
     end;
   end;
 
@@ -95,11 +100,11 @@ begin
         if ADirection = TFFTDirection.Inverse then
           Twiddle.Imag := -Twiddle.Imag;
 
-        EvenValue := ABuffer[PairIndex];
-        OddValue := ABuffer[PairIndex + HalfSize] * Twiddle;
+        EvenValue := Data^[PairIndex];
+        OddValue := Data^[PairIndex + HalfSize] * Twiddle;
 
-        ABuffer[PairIndex] := EvenValue + OddValue;
-        ABuffer[PairIndex + HalfSize] := EvenValue - OddValue;
+        Data^[PairIndex] := EvenValue + OddValue;
+        Data^[PairIndex + HalfSize] := EvenValue - OddValue;
 
         Inc(TwiddleIndex, TableStep);
       end;
@@ -115,7 +120,7 @@ begin
     Scale := 1.0 / Size;
 
     for Index := 0 to Size - 1 do
-      ABuffer[Index] := ABuffer[Index] * Scale;
+     Data^[Index] := Data^[Index] * Scale;
   end;
 end;
 
