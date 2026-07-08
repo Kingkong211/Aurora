@@ -7,6 +7,10 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls,
   System.Math,
   Aurora.Visual.Types,
+  Aurora.Audio.FileSignalSource,
+  Aurora.Engine,
+Winapi.ActiveX,
+WinApi.MediaFoundationApi.MfApi,
   Aurora.Visual.CanvasSpectrum;
 
 type
@@ -22,6 +26,11 @@ type
     FRenderer: TCanvasSpectrumRenderer;
     FBars: TArray<Single>;
     FPhase: Double;
+  FSource : TFileSignalSource;
+
+  FEngine : TAuroraSpectrumEngine;
+
+  FTempBuffer : TArray<Single>;
 
     procedure GenerateDemoBars;
   public
@@ -39,7 +48,32 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
   Style: TSpectrumStyle;
 begin
-  SetLength(FBars, 80);
+
+TimerSpectrum.Enabled := False;
+CoInitialize(nil);
+MFStartup(MF_VERSION, MFSTARTUP_FULL);
+//SetLength(FTempBuffer, 1024);
+
+FSource :=
+  TFileSignalSource.Create(
+    'D:\Music_At_Work\MacThuy\MacThuy_Bi\ChieuTim.wav');
+
+SetLength(FTempBuffer, 1024 * FSource.ChannelCount);
+
+FEngine :=
+  TAuroraSpectrumEngine.Create(
+    FSource.SampleRate,
+    2048,
+    80);
+
+ //exit;
+
+
+FEngine :=
+    TAuroraSpectrumEngine.Create(
+      FSource.SampleRate,
+      2048,
+      80);
 
   FRenderer := TCanvasSpectrumRenderer.Create;
 
@@ -55,6 +89,10 @@ begin
 
   DoubleBuffered := True;
   Color := clBlack;
+
+TimerSpectrum.Interval := 16;
+TimerSpectrum.Enabled := True;
+
 end;
 
 procedure TForm1.GenerateDemoBars;
@@ -84,23 +122,67 @@ end;
 
 procedure TForm1.PaintBoxSpectrumPaint(Sender: TObject);
 begin
-FRenderer.Render(
-  PaintBoxSpectrum.Canvas,
-  PaintBoxSpectrum.ClientRect,
-  @FBars[0],
-  Length(FBars)
-);
+  PaintBoxSpectrum.Canvas.Brush.Color := clRed;
+  PaintBoxSpectrum.Canvas.FillRect(PaintBoxSpectrum.ClientRect);
+
+  if (FRenderer = nil) or (FEngine = nil) then
+    Exit;
+
+  FRenderer.RenderFrame(
+    PaintBoxSpectrum.Canvas,
+    PaintBoxSpectrum.ClientRect,
+    FEngine.CurrentFrame
+  );
 end;
 
 procedure TForm1.TimerSpectrumTimer(Sender: TObject);
+var
+  FramesRead: Integer;
+  HadFrame: Boolean;
 begin
-GenerateDemoBars;
-PaintBoxSpectrum.Invalidate;
+// Caption := 'Timer running ' + TimeToStr(Now);
+  FramesRead := FSource.Read(@FTempBuffer[0], 1024);
+
+  if FramesRead <= 0 then
+  begin
+    TimerSpectrum.Enabled := False;
+    Caption := 'EOF';
+    Exit;
+  end;
+
+  FEngine.PushInterleavedFloat32(
+    @FTempBuffer[0],
+    FramesRead,
+    FSource.ChannelCount
+  );
+
+  HadFrame := False;
+
+  while FEngine.TryProcessFrame do
+    HadFrame := True;
+
+  if HadFrame then
+  begin
+    Caption := Format(
+      'Frame=%d Peak=%.3f RMS=%.3f',
+      [
+        FEngine.CurrentFrame.TimeStamp,
+        FEngine.CurrentFrame.Peak,
+        FEngine.CurrentFrame.RMS
+      ]
+    );
+
+    PaintBoxSpectrum.Invalidate;
+  end;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
 FRenderer.Free;
+FEngine.Free;
+FSource.Free;
+MFShutdown;
+CoUninitialize;
 end;
 
 end.

@@ -42,9 +42,7 @@ type
 
 implementation
 
-uses
-  System.SysUtils,
-  System.Math;
+
 
 type
   TSingleArray = array[0..MaxInt div SizeOf(Single) - 1] of Single;

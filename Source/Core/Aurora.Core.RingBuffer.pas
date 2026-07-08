@@ -45,7 +45,7 @@ type
       const ACount: Integer): Integer;
 
     function Drop(const ACount: Integer): Integer;
-    function TFloatRingBuffer.GetFreeSpace: Integer;
+    function GetFreeSpace: Integer;
 
     property Capacity: Integer read FCapacity;
     property Available: Integer read FCount;

@@ -26,6 +26,7 @@ object Form1: TForm1
     ExplicitHeight = 105
   end
   object TimerSpectrum: TTimer
+    Enabled = False
     Interval = 16
     OnTimer = TimerSpectrumTimer
     Left = 304

@@ -103,7 +103,7 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
-        <DCC_UnitSearchPath>D:\Git\Aurora\Source\Visual;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>D:\Git\Aurora\Source\Visual;D:\Git\Aurora\Source\Audio;D:\Git\Aurora\Source\Analysis;D:\Git\Aurora\Source\Core;D:\Git\Aurora\Audio\MediaFoundation;D:\Delphi\2026\MfPack-Master\src;D:\Git\Aurora\Audio;D:\Git\Aurora\Source\Engine;D:\Git\Aurora\Numerics;D:\Git\Aurora\DSP;D:\Git\Aurora\DSP\FFT;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>

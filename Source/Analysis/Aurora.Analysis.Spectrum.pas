@@ -30,6 +30,8 @@ type
     procedure BuildLogBands;
 
     function FrequencyToBin(const AFrequency: Single): Integer;
+    procedure SetMinFrequency(const AValue: Single);
+    procedure SetMaxFrequency(const AValue: Single);
   public
     constructor Create(
       const AFFTSize: Integer;

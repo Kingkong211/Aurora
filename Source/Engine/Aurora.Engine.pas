@@ -176,7 +176,7 @@ begin
     raise EArgumentOutOfRangeException.Create('Channel count must be positive.');
 end;
 
-procedure ValidatePushInput(
+procedure TAuroraSpectrumEngine.ValidatePushInput(
   const ASamples: PSingle;
   const ASampleFrameCount: Integer;
   const AChannelCount: Integer);
@@ -225,12 +225,19 @@ begin
 end;
 
 
+// Legacy offline API.
+// Prefer PushInterleavedFloat32 + TryProcessFrame.
+
 procedure TAuroraSpectrumEngine.ProcessInterleavedFloat32(
   const ASamples: PSingle;
   const ASampleFrameCount: Integer;
   const AChannelCount: Integer);
 begin
-  ValidateInput(ASamples, ASampleFrameCount, AChannelCount);
+  //ValidateInput(ASamples, ASampleFrameCount, AChannelCount);
+ ValidateProcessInput(
+    ASamples,
+    ASampleFrameCount,
+    AChannelCount);
 
   ConvertInterleavedToMono(ASamples, ASampleFrameCount, AChannelCount);
   FWindow.ApplyInPlace(@FMono[0]);
@@ -290,7 +297,12 @@ var
   ScalarIndex: Integer;
   Sum: Single;
 begin
-  ValidateInput(ASamples, FFFTSize, AChannelCount);
+  //ValidateInput(ASamples, FFFTSize, AChannelCount); old
+  ValidatePushInput(
+  ASamples,
+  ASampleFrameCount,
+  AChannelCount
+  );
 
   if ASampleFrameCount <= 0 then
     Exit;
@@ -313,6 +325,8 @@ begin
 end;
 
 function TAuroraSpectrumEngine.TryProcessFrame: Boolean;
+var I: integer;
+  Sum: Double;
 begin
   Result := False;
 

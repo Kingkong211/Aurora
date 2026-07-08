@@ -52,6 +52,9 @@ uses
   System.Math;
 
 { TWindowPlan }
+type
+  TSingleArray = array[0..MaxInt div SizeOf(Single) - 1] of Single;
+  PSingleArray = ^TSingleArray;
 
 constructor TWindowPlan.Create(
   const AKind: TWindowKind;
@@ -111,6 +114,8 @@ procedure TWindowPlan.Apply(
   const AOutput: PSingle);
 var
   Index: Integer;
+  Input: PSingleArray;
+  Output: PSingleArray;
 begin
   if AInput = nil then
     raise EArgumentNilException.Create('Input pointer must not be nil.');
@@ -118,20 +123,30 @@ begin
   if AOutput = nil then
     raise EArgumentNilException.Create('Output pointer must not be nil.');
 
+  //for Index := 0 to FSize - 1 do
+   // AOutput[Index] := AInput[Index] * FCoefficients[Index];
+  Input := PSingleArray(AInput);
+  Output := PSingleArray(AOutput);
+
   for Index := 0 to FSize - 1 do
-    AOutput[Index] := AInput[Index] * FCoefficients[Index];
+    Output^[Index] := Input^[Index] * FCoefficients[Index];
 end;
 
 procedure TWindowPlan.ApplyInPlace(
   const ABuffer: PSingle);
 var
   Index: Integer;
+  Samples: PSingleArray;
 begin
   if ABuffer = nil then
     raise EArgumentNilException.Create('Buffer pointer must not be nil.');
 
+  //for Index := 0 to FSize - 1 do
+   // ABuffer[Index] := ABuffer[Index] * FCoefficients[Index];
+  Samples := PSingleArray(ABuffer);
+
   for Index := 0 to FSize - 1 do
-    ABuffer[Index] := ABuffer[Index] * FCoefficients[Index];
+    Samples^[Index] := Samples^[Index] * FCoefficients[Index];
 end;
 
 end.
