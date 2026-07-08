@@ -29,6 +29,7 @@ type
     FFFTSize: Integer;
     FBarCount: Integer;
     FDynamicRangeDB: Single;
+    FHopSize: Integer;
 
     FWindow: TWindowPlan;
     FFFTPlan: TFFTPlan;
@@ -87,6 +88,7 @@ function TryProcessFrame: Boolean;
     property BarCount: Integer read FBarCount;
     property DynamicRangeDB: Single read FDynamicRangeDB write FDynamicRangeDB;
     property Bars: PSingle read GetBars;
+    property HopSize: Integer read FHopSize;
   end;
 
 implementation
@@ -121,6 +123,7 @@ begin
 
   FSampleRate := ASampleRate;
   FFFTSize := AFFTSize;
+  FHopSize := FFFTSize div 2;
   FBarCount := ABarCount;
   FDynamicRangeDB := 60.0;
 
