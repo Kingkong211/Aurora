@@ -24,10 +24,12 @@ var
   Magnitude: Single;
   PeakMagnitude: Single;
   Phase: Double;
+    Magnitudes: array of Single;
 
 begin
   try
     SetLength(Buffer, FFTSize);
+    SetLength(Magnitudes, FFTSize div 2);
 
     for Index := 0 to FFTSize - 1 do
     begin
@@ -43,12 +45,18 @@ begin
         TFFTDirection.Forward
       );
 
+TMagnitude.ComputePower(
+  PComplex32(@Buffer[0]),
+  @Magnitudes[0],
+  FFTSize div 2
+);
       PeakBin := 0;
       PeakMagnitude := 0.0;
 
       for Index := 0 to (FFTSize div 2) - 1 do
       begin
-        Magnitude := Buffer[Index].MagnitudeSquared;
+       // Magnitude := Buffer[Index].MagnitudeSquared;
+       Magnitude := Magnitudes[Index];
 
         if Magnitude > PeakMagnitude then
         begin
