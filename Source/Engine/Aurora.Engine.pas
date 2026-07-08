@@ -18,6 +18,7 @@ uses
   Aurora.Numerics.Complex,
   Aurora.DSP.Window,
   Aurora.DSP.FFT.Plan,
+  Aurora.Core.RingBuffer,
   Aurora.Analysis.Spectrum;
 
 type
@@ -32,16 +33,24 @@ type
     FFFTPlan: TFFTPlan;
     FSpectrum: TSpectrumAnalyzer;
 
+    FRingBuffer: TFloatRingBuffer;
+    FFrameBuffer: TArray<Single>;
+
     FMono: TArray<Single>;
     FComplex: TArray<TComplex32>;
     FMagnitudes: TArray<Single>;
     FRawBars: TArray<Single>;
     FBars: TArray<Single>;
 
-    procedure ValidateInput(
+    procedure ValidateProcessInput(
       const ASamples: PSingle;
       const ASampleFrameCount: Integer;
       const AChannelCount: Integer);
+
+procedure ValidatePushInput(
+  const ASamples: PSingle;
+  const ASampleFrameCount: Integer;
+  const AChannelCount: Integer);
 
     procedure ConvertInterleavedToMono(
       const ASamples: PSingle;
@@ -57,6 +66,13 @@ type
       const ABarCount: Integer = 80);
 
     destructor Destroy; override;
+
+procedure PushInterleavedFloat32(
+  const ASamples: PSingle;
+  const ASampleFrameCount: Integer;
+  const AChannelCount: Integer);
+
+function TryProcessFrame: Boolean;
 
     procedure ProcessInterleavedFloat32(
       const ASamples: PSingle;
@@ -115,10 +131,13 @@ begin
   SetLength(FMagnitudes, FFFTSize div 2);
   SetLength(FRawBars, FBarCount);
   SetLength(FBars, FBarCount);
+  FRingBuffer := TFloatRingBuffer.Create(FFFTSize * 16);
+  SetLength(FFrameBuffer, FFFTSize);
 end;
 
 destructor TAuroraSpectrumEngine.Destroy;
 begin
+  FRingBuffer.Free;
   FSpectrum.Free;
   FFFTPlan.Free;
   FWindow.Free;
@@ -126,7 +145,7 @@ begin
   inherited;
 end;
 
-procedure TAuroraSpectrumEngine.ValidateInput(
+procedure TAuroraSpectrumEngine.ValidateProcessInput(
   const ASamples: PSingle;
   const ASampleFrameCount: Integer;
   const AChannelCount: Integer);
@@ -136,6 +155,21 @@ begin
 
   if ASampleFrameCount < FFFTSize then
     raise EArgumentOutOfRangeException.Create('Not enough sample frames for FFT.');
+
+  if AChannelCount <= 0 then
+    raise EArgumentOutOfRangeException.Create('Channel count must be positive.');
+end;
+
+procedure ValidatePushInput(
+  const ASamples: PSingle;
+  const ASampleFrameCount: Integer;
+  const AChannelCount: Integer);
+begin
+  if ASamples = nil then
+    raise EArgumentNilException.Create('Samples pointer must not be nil.');
+
+  if ASampleFrameCount < 0 then
+    raise EArgumentOutOfRangeException.Create('Sample frame count must be non-negative.');
 
   if AChannelCount <= 0 then
     raise EArgumentOutOfRangeException.Create('Channel count must be positive.');
@@ -248,6 +282,80 @@ begin
     Exit(nil);
 
   Result := @FBars[0];
+end;
+
+procedure TAuroraSpectrumEngine.PushInterleavedFloat32(
+  const ASamples: PSingle;
+  const ASampleFrameCount: Integer;
+  const AChannelCount: Integer);
+var
+  TempMono: TArray<Single>;
+  Input: PSingleArray;
+  FrameIndex: Integer;
+  ChannelIndex: Integer;
+  ScalarIndex: Integer;
+  Sum: Single;
+begin
+  ValidateInput(ASamples, FFFTSize, AChannelCount);
+
+  if ASampleFrameCount <= 0 then
+    Exit;
+
+  SetLength(TempMono, ASampleFrameCount);
+  Input := PSingleArray(ASamples);
+
+  for FrameIndex := 0 to ASampleFrameCount - 1 do
+  begin
+    Sum := 0.0;
+    ScalarIndex := FrameIndex * AChannelCount;
+
+    for ChannelIndex := 0 to AChannelCount - 1 do
+      Sum := Sum + Input^[ScalarIndex + ChannelIndex];
+
+    TempMono[FrameIndex] := Sum / AChannelCount;
+  end;
+
+  FRingBuffer.Write(@TempMono[0], ASampleFrameCount);
+end;
+
+function TAuroraSpectrumEngine.TryProcessFrame: Boolean;
+begin
+  Result := False;
+
+  if FRingBuffer.Available < FFFTSize then
+    Exit;
+
+  FRingBuffer.Read(@FFrameBuffer[0], FFFTSize);
+
+  Move(
+    FFrameBuffer[0],
+    FMono[0],
+    FFFTSize * SizeOf(Single)
+  );
+
+  FWindow.ApplyInPlace(@FMono[0]);
+  BuildComplexInput;
+
+  TRadix2FFT.Execute(
+    FFFTPlan,
+    PComplex32(@FComplex[0]),
+    TFFTDirection.Forward
+  );
+
+  TMagnitude.ComputePower(
+    PComplex32(@FComplex[0]),
+    @FMagnitudes[0],
+    FFFTSize div 2
+  );
+
+  FSpectrum.Analyze(
+    @FMagnitudes[0],
+    @FRawBars[0]
+  );
+
+  NormalizeBars;
+
+  Result := True;
 end;
 
 end.
