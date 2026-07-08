@@ -17,6 +17,7 @@ interface
 uses
   System.Types,
   Vcl.Graphics,
+  Aurora.Core.Frame,
   Aurora.Visual.Types;
 
 type
@@ -39,6 +40,11 @@ type
       const ACount: Integer);
   public
     constructor Create;
+
+  procedure RenderFrame(
+  const ACanvas: TCanvas;
+  const ARect: TRect;
+  const AFrame: TAuroraFrame);
 
     procedure Render(
       const ACanvas: TCanvas;
@@ -80,6 +86,23 @@ begin
 
   Result := AValue;
 end;
+
+procedure TCanvasSpectrumRenderer.RenderFrame(
+  const ACanvas: TCanvas;
+  const ARect: TRect;
+  const AFrame: TAuroraFrame);
+begin
+  if Length(AFrame.Bars) = 0 then
+    Exit;
+
+  Render(
+    ACanvas,
+    ARect,
+    @AFrame.Bars[0],
+    Length(AFrame.Bars)
+  );
+end;
+
 
 procedure TCanvasSpectrumRenderer.Render(
   const ACanvas: TCanvas;
