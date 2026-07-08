@@ -18,7 +18,7 @@ interface
 
 {$SCOPEDENUMS ON}
 
-type
+//type
   /// <summary>
   /// Float32 complex number.
   /// </summary>
@@ -26,7 +26,11 @@ type
   /// Aurora uses Float32 for DSP hot paths to keep memory bandwidth predictable
   /// and to prepare for future SIMD optimization.
   /// </remarks>
+  //TComplex32 = packed record
+type
+  PComplex32 = ^TComplex32;
   TComplex32 = packed record
+
   public
     Real: Single;
     Imag: Single;
