@@ -19,7 +19,8 @@ uses
   Aurora.DSP.Window,
   Aurora.DSP.FFT.Plan,
   Aurora.Core.RingBuffer,
-  Aurora.Analysis.Normalization;
+  Aurora.Core.Frame,
+  Aurora.Analysis.Normalization,
   Aurora.Analysis.Spectrum;
 
 type
@@ -43,6 +44,7 @@ type
     FMagnitudes: TArray<Single>;
     FRawBars: TArray<Single>;
     FBars: TArray<Single>;
+    FCurrentFrame: TAuroraFrame;
 
     procedure ValidateProcessInput(
       const ASamples: PSingle;
@@ -89,6 +91,7 @@ function TryProcessFrame: Boolean;
     property DynamicRangeDB: Single read FDynamicRangeDB write FDynamicRangeDB;
     property Bars: PSingle read GetBars;
     property HopSize: Integer read FHopSize;
+    property CurrentFrame: TAuroraFrame read FCurrentFrame;
   end;
 
 implementation
@@ -136,6 +139,14 @@ begin
   SetLength(FMagnitudes, FFFTSize div 2);
   SetLength(FRawBars, FBarCount);
   SetLength(FBars, FBarCount);
+FCurrentFrame :=
+  TAuroraFrame.Create(
+    FSampleRate,
+    FFFTSize,
+    FHopSize,
+    FBarCount
+  );
+
   FRingBuffer := TFloatRingBuffer.Create(FFFTSize * 16);
   SetLength(FFrameBuffer, FFFTSize);
 end;
@@ -250,6 +261,13 @@ TSignalNormalizer.NormalizePowerTo01(
   FBarCount,
   FDynamicRangeDB
 );
+
+Move(
+  FBars[0],
+  FCurrentFrame.Bars[0],
+  FBarCount * SizeOf(Single)
+);
+
 end;
 
 function TAuroraSpectrumEngine.GetBars: PSingle;
@@ -301,7 +319,8 @@ begin
   if FRingBuffer.Available < FFFTSize then
     Exit;
 
-  FRingBuffer.Read(@FFrameBuffer[0], FFFTSize);
+ // FRingBuffer.Read(@FFrameBuffer[0], FFFTSize);
+ FRingBuffer.Peek(@FFrameBuffer[0], FFFTSize);
 
   Move(
     FFrameBuffer[0],
@@ -337,6 +356,29 @@ TSignalNormalizer.NormalizePowerTo01(
   FDynamicRangeDB
 );
 
+  Move(
+    FBars[0],
+    FCurrentFrame.Bars[0],
+    FBarCount * SizeOf(Single)
+  );
+
+  FCurrentFrame.Peak := 0.0;
+
+  for I := 0 to FBarCount - 1 do
+    if FBars[I] > FCurrentFrame.Peak then
+      FCurrentFrame.Peak := FBars[I];
+
+  Sum := 0.0;
+
+  for I := 0 to FBarCount - 1 do
+    Sum := Sum + FBars[I] * FBars[I];
+
+  FCurrentFrame.RMS := Sqrt(Sum / FBarCount);
+  FCurrentFrame.Energy := FCurrentFrame.RMS;
+  Inc(FCurrentFrame.TimeStamp, FHopSize);
+
+
+  FRingBuffer.Drop(FHopSize);
   Result := True;
 end;
 
