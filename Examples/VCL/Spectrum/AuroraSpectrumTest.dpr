@@ -1,14 +1,14 @@
-program Aurora_Example_VCL_Spectrum;
+program AuroraSpectrumTest;
 
 uses
   Vcl.Forms,
-  Main in 'Main.pas';
+  SpectrumTest in 'SpectrumTest.pas' {Form1};
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TfrmMain, frmMain);
+  Application.CreateForm(TForm1, Form1);
   Application.Run;
 end.
