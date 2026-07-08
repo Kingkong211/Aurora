@@ -43,8 +43,8 @@ type
     property FFTSize: Integer read FFFTSize;
     property SampleRate: Integer read FSampleRate;
     property BarCount: Integer read FBarCount;
-    property MinFrequency: Single read FMinFrequency write FMinFrequency;
-    property MaxFrequency: Single read FMaxFrequency write FMaxFrequency;
+property MinFrequency: Single read FMinFrequency write SetMinFrequency;
+property MaxFrequency: Single read FMaxFrequency write SetMaxFrequency;
   end;
 
 implementation
@@ -75,6 +75,30 @@ begin
   FMaxFrequency := FSampleRate / 2.0;
 
   Validate;
+  BuildLogBands;
+end;
+
+procedure TSpectrumAnalyzer.SetMinFrequency(const AValue: Single);
+begin
+  if AValue <= 0.0 then
+    raise EArgumentOutOfRangeException.Create('Minimum frequency must be positive.');
+
+  if AValue >= FMaxFrequency then
+    raise EArgumentOutOfRangeException.Create('Minimum frequency must be lower than maximum frequency.');
+
+  FMinFrequency := AValue;
+  BuildLogBands;
+end;
+
+procedure TSpectrumAnalyzer.SetMaxFrequency(const AValue: Single);
+begin
+  if AValue <= FMinFrequency then
+    raise EArgumentOutOfRangeException.Create('Maximum frequency must be higher than minimum frequency.');
+
+  if AValue > FSampleRate / 2.0 then
+    raise EArgumentOutOfRangeException.Create('Maximum frequency must not exceed Nyquist frequency.');
+
+  FMaxFrequency := AValue;
   BuildLogBands;
 end;
 

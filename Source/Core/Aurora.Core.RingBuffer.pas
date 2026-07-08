@@ -45,10 +45,11 @@ type
       const ACount: Integer): Integer;
 
     function Drop(const ACount: Integer): Integer;
+    function TFloatRingBuffer.GetFreeSpace: Integer;
 
     property Capacity: Integer read FCapacity;
     property Available: Integer read FCount;
-    property FreeSpace: Integer read FCapacity;
+   property FreeSpace: Integer read GetFreeSpace;
   end;
 
 implementation
@@ -73,6 +74,11 @@ begin
   SetLength(FData, FCapacity);
 
   Clear;
+end;
+
+function TFloatRingBuffer.GetFreeSpace: Integer;
+begin
+  Result := FCapacity - FCount;
 end;
 
 procedure TFloatRingBuffer.ValidateCapacity(const ACapacity: Integer);
