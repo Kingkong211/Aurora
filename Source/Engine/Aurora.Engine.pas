@@ -19,6 +19,7 @@ uses
   Aurora.DSP.Window,
   Aurora.DSP.FFT.Plan,
   Aurora.Core.RingBuffer,
+  Aurora.Analysis.Normalization;
   Aurora.Analysis.Spectrum;
 
 type
@@ -58,7 +59,7 @@ procedure ValidatePushInput(
       const AChannelCount: Integer);
 
     procedure BuildComplexInput;
-    procedure NormalizeBars;
+
   public
     constructor Create(
       const ASampleRate: Integer;
@@ -79,12 +80,13 @@ function TryProcessFrame: Boolean;
       const ASampleFrameCount: Integer;
       const AChannelCount: Integer);
 
-    function BarsPointer: PSingle;
+    function GetBars: PSingle;
 
     property SampleRate: Integer read FSampleRate;
     property FFTSize: Integer read FFFTSize;
     property BarCount: Integer read FBarCount;
     property DynamicRangeDB: Single read FDynamicRangeDB write FDynamicRangeDB;
+    property Bars: PSingle read GetBars;
   end;
 
 implementation
@@ -208,41 +210,6 @@ begin
     FComplex[Index] := TComplex32.Create(FMono[Index], 0.0);
 end;
 
-procedure TAuroraSpectrumEngine.NormalizeBars;
-var
-  Index: Integer;
-  MaxValue: Single;
-  DBValue: Single;
-begin
-  MaxValue := 0.0;
-
-  for Index := 0 to FBarCount - 1 do
-    if FRawBars[Index] > MaxValue then
-      MaxValue := FRawBars[Index];
-
-  if MaxValue <= 0.0 then
-  begin
-    for Index := 0 to FBarCount - 1 do
-      FBars[Index] := 0.0;
-
-    Exit;
-  end;
-
-  for Index := 0 to FBarCount - 1 do
-  begin
-    if FRawBars[Index] <= 0.0 then
-      DBValue := -FDynamicRangeDB
-    else
-      DBValue := Single(10.0 * Log10(FRawBars[Index] / MaxValue));
-
-    FBars[Index] := (DBValue + FDynamicRangeDB) / FDynamicRangeDB;
-
-    if FBars[Index] < 0.0 then
-      FBars[Index] := 0.0
-    else if FBars[Index] > 1.0 then
-      FBars[Index] := 1.0;
-  end;
-end;
 
 procedure TAuroraSpectrumEngine.ProcessInterleavedFloat32(
   const ASamples: PSingle;
@@ -273,10 +240,16 @@ begin
     @FRawBars[0]
   );
 
-  NormalizeBars;
+//  NormalizeBars;
+TSignalNormalizer.NormalizePowerTo01(
+  @FRawBars[0],
+  @FBars[0],
+  FBarCount,
+  FDynamicRangeDB
+);
 end;
 
-function TAuroraSpectrumEngine.BarsPointer: PSingle;
+function TAuroraSpectrumEngine.GetBars: PSingle;
 begin
   if Length(FBars) = 0 then
     Exit(nil);
@@ -353,7 +326,13 @@ begin
     @FRawBars[0]
   );
 
-  NormalizeBars;
+  //NormalizeBars;
+TSignalNormalizer.NormalizePowerTo01(
+  @FRawBars[0],
+  @FBars[0],
+  FBarCount,
+  FDynamicRangeDB
+);
 
   Result := True;
 end;
