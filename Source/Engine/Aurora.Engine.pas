@@ -240,7 +240,7 @@ begin
     @FRawBars[0]
   );
 
-//  NormalizeBars;
+
 TSignalNormalizer.NormalizePowerTo01(
   @FRawBars[0],
   @FBars[0],
@@ -326,7 +326,7 @@ begin
     @FRawBars[0]
   );
 
-  //NormalizeBars;
+
 TSignalNormalizer.NormalizePowerTo01(
   @FRawBars[0],
   @FBars[0],
