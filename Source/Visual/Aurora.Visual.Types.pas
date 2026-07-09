@@ -53,6 +53,12 @@ type
     PeakMarkerHeight: Integer;
     PeakMarkerWidth: Integer;
     PeakMarkerEnabled: Boolean;
+    MarginLeft: Integer;
+    MarginTop: Integer;
+    MarginRight: Integer;
+    MarginBottom: Integer;
+
+    MinimumBarHeight: Integer;	
 
     class function Default: TSpectrumStyle; static;
   class function FromPreset(
@@ -78,6 +84,12 @@ begin
   Result.PeakMarkerColor := TColors.White;
   Result.PeakMarkerHeight := 3;
   Result.PeakMarkerWidth := 0;   // 0 = cùng chiều rộng với bar
+  Result.MarginLeft := 2;
+  Result.MarginTop := 2;
+  Result.MarginRight := 2;
+  Result.MarginBottom := 2;
+
+  Result.MinimumBarHeight := 1;  
 end;
 
 class function TSpectrumStyle.FromPreset(
@@ -122,18 +134,25 @@ begin
 
     TSpectrumThemePreset.OkaraDark:
       begin
-        Result.BackgroundColor := RGB(10, 12, 18);
-        Result.BarColor := RGB(70, 210, 255);
+        Result.BackgroundColor := RGB(7, 9, 14);
+        Result.BarColor := RGB(55, 205, 255);
         Result.PeakColor := RGB(245, 250, 255);
         Result.PeakMarkerColor := RGB(245, 250, 255);
 
         Result.BarSpacing := 2;
         Result.BlockHeight := 5;
-        Result.BlockSpacing := 2;
+        Result.BlockSpacing := 1;
 
         Result.PeakMarkerEnabled := True;
         Result.PeakMarkerHeight := 2;
         Result.PeakMarkerWidth := 0;
+
+        Result.MarginLeft := 2;
+        Result.MarginTop := 2;
+        Result.MarginRight := 2;
+        Result.MarginBottom := 2;
+
+        Result.MinimumBarHeight := 1;
       end;
 
     TSpectrumThemePreset.WaterGrid:
@@ -154,18 +173,20 @@ begin
 
     TSpectrumThemePreset.StoicAmber:
       begin
-        Result.BackgroundColor := RGB(14, 10, 6);
-        Result.BarColor := RGB(255, 176, 72);
-        Result.PeakColor := RGB(255, 235, 190);
-        Result.PeakMarkerColor := RGB(255, 235, 190);
+        Result.BackgroundColor := RGB(12, 9, 5);
+        Result.BarColor := RGB(255, 178, 64);
+        Result.PeakColor := RGB(255, 235, 185);
+        Result.PeakMarkerColor := RGB(255, 235, 185);
 
         Result.BarSpacing := 2;
         Result.BlockHeight := 4;
         Result.BlockSpacing := 2;
-
-        Result.PeakMarkerEnabled := True;
+        Result.MarginLeft := 2;
+        Result.MarginTop := 2;
+        Result.MarginRight := 2;
+        Result.MarginBottom := 3;
         Result.PeakMarkerHeight := 2;
-        Result.PeakMarkerWidth := 0;
+        Result.MinimumBarHeight := 1;
       end;
 
   end;
