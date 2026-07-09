@@ -16,6 +16,7 @@ Completed:
 - ProcessAvailableFrames
 - Clean SpectrumTest integration
 -------------------------------------------------
+9.7.2026: Spectrum ON the main player: PASS OK.
 
 }
 
