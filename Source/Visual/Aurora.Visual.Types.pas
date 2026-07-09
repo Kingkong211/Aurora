@@ -1,4 +1,4 @@
-{******************************************************************************}
+﻿{******************************************************************************}
 {                                                                              }
 {  Aurora Signal Processing Framework                                           }
 {                                                                              }
@@ -62,7 +62,7 @@ begin
   Result.Orientation := TSpectrumOrientation.BottomUp;
   Result.BarStyle := TSpectrumBarStyle.Solid;
   Result.PeakMarkerEnabled := True;
-  Result.PeakMarkerColor := clWhite;
+  Result.PeakMarkerColor := TColors.White;
   Result.PeakMarkerHeight := 3;
   Result.PeakMarkerWidth := 0;   // 0 = cùng chiều rộng với bar
 end;

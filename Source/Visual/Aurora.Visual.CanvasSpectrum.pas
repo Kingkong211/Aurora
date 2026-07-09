@@ -61,10 +61,10 @@ procedure RenderPeakMarkers(
 
   property Style: TSpectrumStyle read FStyle write FStyle;
 
-  procedure RenderDisplayFrame(
-     const ACanvas: TCanvas;
-     const ARect: TRect;
-     const AFrame: TDisplayFrame);
+procedure RenderDisplayFrame(
+  const ACanvas: TCanvas;
+  const ARect: TRect;
+  const AFrame: TDisplayFrame);
 
   end;
 
@@ -95,6 +95,28 @@ begin
     Exit(1.0);
 
   Result := AValue;
+end;
+
+procedure TCanvasSpectrumRenderer.RenderDisplayFrame(
+  const ACanvas: TCanvas;
+  const ARect: TRect;
+  const AFrame: TDisplayFrame);
+begin
+  if AFrame.BarCount <= 0 then
+    Exit;
+
+  Render(
+    ACanvas,
+    ARect,
+    @AFrame.Bars[0],
+    AFrame.BarCount
+  );
+
+  RenderPeakMarkers(
+    ACanvas,
+    ARect,
+    AFrame
+  );
 end;
 
 procedure TCanvasSpectrumRenderer.RenderPeakMarkers(
@@ -179,13 +201,6 @@ begin
     @AFrame.Bars[0],
     Length(AFrame.Bars)
   );
-
-RenderPeakMarkers(
-  ACanvas,
-  ARect,
-  AFrame
-);
-
 end;
 
 

@@ -128,25 +128,14 @@ end;
 
 procedure TForm1.PaintBoxSpectrumPaint(Sender: TObject);
 begin
-  PaintBoxSpectrum.Canvas.Brush.Color := clRed;
-  PaintBoxSpectrum.Canvas.FillRect(PaintBoxSpectrum.ClientRect);
-
-  if (FRenderer = nil) or (FEngine = nil) then
+  if (FRenderer = nil) or (FDisplayFrame.BarCount <= 0) then
     Exit;
 
- { FRenderer.RenderFrame(
+  FRenderer.RenderDisplayFrame(
     PaintBoxSpectrum.Canvas,
     PaintBoxSpectrum.ClientRect,
-    FEngine.CurrentFrame
-  );    }
-
-FRenderer.Render(
-  PaintBoxSpectrum.Canvas,
-  PaintBoxSpectrum.ClientRect,
-  @FDisplayFrame.Bars[0],
-  FDisplayFrame.BarCount
-);
-
+    FDisplayFrame
+  );
 end;
 
 procedure TForm1.TimerSpectrumTimer(Sender: TObject);
