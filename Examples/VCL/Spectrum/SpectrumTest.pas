@@ -54,7 +54,6 @@ begin
 TimerSpectrum.Enabled := False;
 CoInitialize(nil);
 MFStartup(MF_VERSION, MFSTARTUP_FULL);
-//SetLength(FTempBuffer, 1024);
 
 FSource :=
   TFileSignalSource.Create(
@@ -62,14 +61,7 @@ FSource :=
 
 SetLength(FTempBuffer, 1024 * FSource.ChannelCount);
 
-{
-FEngine :=
-  TAuroraSpectrumEngine.Create(
-    FSource.SampleRate,
-    2048,
-    80);
 
- //exit;  }
 
 
 FEngine :=
