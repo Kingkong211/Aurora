@@ -39,6 +39,10 @@ type
     BlockSpacing: Integer;
     Orientation: TSpectrumOrientation;
     BarStyle: TSpectrumBarStyle;
+    PeakMarkerColor: TColor;
+    PeakMarkerHeight: Integer;
+    PeakMarkerWidth: Integer;
+    PeakMarkerEnabled: Boolean;
 
     class function Default: TSpectrumStyle; static;
   end;
@@ -57,6 +61,10 @@ begin
   Result.BlockSpacing := 1;
   Result.Orientation := TSpectrumOrientation.BottomUp;
   Result.BarStyle := TSpectrumBarStyle.Solid;
+  Result.PeakMarkerEnabled := True;
+  Result.PeakMarkerColor := clWhite;
+  Result.PeakMarkerHeight := 3;
+  Result.PeakMarkerWidth := 0;   // 0 = cùng chiều rộng với bar
 end;
 
 end.

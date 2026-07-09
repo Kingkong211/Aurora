@@ -18,6 +18,7 @@ uses
   System.Types,
   Vcl.Graphics,
   Aurora.Core.Frame,
+  Aurora.Visual.Frame,
   Aurora.Visual.Types;
 
 type
@@ -38,6 +39,12 @@ type
       const ARect: TRect;
       const ABars: PSingle;
       const ACount: Integer);
+
+procedure RenderPeakMarkers(
+  const ACanvas: TCanvas;
+  const ARect: TRect;
+  const AFrame: TDisplayFrame);
+
   public
     constructor Create;
 
@@ -46,15 +53,18 @@ type
   const ARect: TRect;
   const AFrame: TAuroraFrame);
 
-    procedure Render(
+  procedure Render(
       const ACanvas: TCanvas;
       const ARect: TRect;
       const ABars: PSingle;
       const ACount: Integer);
 
-    property Style: TSpectrumStyle read FStyle write FStyle;
-    //function GetFreeSpace: Integer;
-   // property FreeSpace: Integer read GetFreeSpace;
+  property Style: TSpectrumStyle read FStyle write FStyle;
+
+  procedure RenderDisplayFrame(
+     const ACanvas: TCanvas;
+     const ARect: TRect;
+     const AFrame: TDisplayFrame);
 
   end;
 
@@ -87,6 +97,74 @@ begin
   Result := AValue;
 end;
 
+procedure TCanvasSpectrumRenderer.RenderPeakMarkers(
+  const ACanvas: TCanvas;
+  const ARect: TRect;
+  const AFrame: TDisplayFrame);
+var
+  BarIndex: Integer;
+  AvailableWidth: Integer;
+  BarWidth: Integer;
+  MarkerWidth: Integer;
+  LeftPos: Integer;
+  RightPos: Integer;
+  MarkerTop: Integer;
+  Value: Single;
+begin
+  if not FStyle.PeakMarkerEnabled then
+    Exit;
+
+  if AFrame.BarCount <= 0 then
+    Exit;
+
+  AvailableWidth :=
+    ARect.Width -
+    (AFrame.BarCount - 1) * FStyle.BarSpacing;
+
+  if AvailableWidth <= 0 then
+    Exit;
+
+  BarWidth := AvailableWidth div AFrame.BarCount;
+
+  if BarWidth <= 0 then
+    BarWidth := 1;
+
+  MarkerWidth := FStyle.PeakMarkerWidth;
+
+  if MarkerWidth <= 0 then
+    MarkerWidth := BarWidth;
+
+  ACanvas.Brush.Color := FStyle.PeakMarkerColor;
+
+  for BarIndex := 0 to AFrame.BarCount - 1 do
+  begin
+    Value := Clamp01(AFrame.PeakBars[BarIndex]);
+
+    MarkerTop :=
+      ARect.Bottom -
+      Round(Value * ARect.Height);
+
+    if MarkerTop < ARect.Top then
+      MarkerTop := ARect.Top;
+
+    LeftPos :=
+      ARect.Left +
+      BarIndex * (BarWidth + FStyle.BarSpacing) +
+      (BarWidth - MarkerWidth) div 2;
+
+    RightPos := LeftPos + MarkerWidth;
+
+    ACanvas.FillRect(
+      Rect(
+        LeftPos,
+        MarkerTop,
+        RightPos,
+        MarkerTop + FStyle.PeakMarkerHeight
+      )
+    );
+  end;
+end;
+
 procedure TCanvasSpectrumRenderer.RenderFrame(
   const ACanvas: TCanvas;
   const ARect: TRect;
@@ -101,6 +179,13 @@ begin
     @AFrame.Bars[0],
     Length(AFrame.Bars)
   );
+
+RenderPeakMarkers(
+  ACanvas,
+  ARect,
+  AFrame
+);
+
 end;
 
 
