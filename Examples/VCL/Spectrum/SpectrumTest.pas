@@ -1,3 +1,24 @@
+{
+----------------------------------------------
+AURORA STABLE BASE
+Version: M3.3
+Date: 9.7.2026
+Status: PASS
+
+Completed:
+- Realtime RingBuffer spectrum engine
+- TAuroraFrame output
+- DisplayProcessor with Envelope + Peak Hold
+- TDisplayFrame render model
+- CanvasSpectrumRenderer
+- Theme Preset system
+- TAuroraVisualRuntime
+- ProcessAvailableFrames
+- Clean SpectrumTest integration
+-------------------------------------------------
+
+}
+
 unit SpectrumTest;
 
 interface
@@ -115,20 +136,7 @@ begin
     FSource.ChannelCount
   );
 
-  {
-  if FAurora.Process then
-  begin
-    Caption := Format(
-      'Frame=%d Peak=%.3f RMS=%.3f',
-      [
-        FAurora.Engine.CurrentFrame.TimeStamp,
-        FAurora.Engine.CurrentFrame.Peak,
-        FAurora.Engine.CurrentFrame.RMS
-      ]
-    );
 
-    PaintBoxSpectrum.Invalidate;
-  end;    }
  if FAurora.ProcessAvailableFrames then
 begin
   Caption := Format(
