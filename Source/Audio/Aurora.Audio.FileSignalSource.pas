@@ -38,6 +38,10 @@ type
     function SampleRate: Integer;
     function ChannelCount: Integer;
     function SampleCount: Integer;
+    procedure SeekFrame(const AFrameIndex: Integer);
+    procedure SeekSeconds(const ASeconds: Double);
+
+    property PositionFrame: Integer read FPosition;	
   end;
 
 implementation
@@ -97,6 +101,27 @@ Result :=
   );
 
   Inc(FPosition, Result);
+end;
+
+procedure TFileSignalSource.SeekFrame(
+  const AFrameIndex: Integer
+);
+begin
+  if AFrameIndex < 0 then
+    FPosition := 0
+  else if AFrameIndex > FBuffer.SampleCount then
+    FPosition := FBuffer.SampleCount
+  else
+    FPosition := AFrameIndex;
+end;
+
+procedure TFileSignalSource.SeekSeconds(
+  const ASeconds: Double
+);
+begin
+  SeekFrame(
+    Round(ASeconds * SampleRate)
+  );
 end;
 
 function TFileSignalSource.SampleRate: Integer;
