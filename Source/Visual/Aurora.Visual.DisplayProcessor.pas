@@ -49,8 +49,10 @@ procedure TDisplayProcessor.Process(
   var ADestination: TDisplayFrame);
 begin
   if ASource.BarCount <> ADestination.BarCount then
-    raise EInvalidOperation.Create(
-      'Display frame size mismatch.');
+    //raise EInvalidOperation.Create(
+     // 'Display frame size mismatch.');
+     raise Exception.Create(
+     'Display frame size mismatch.');
 
   Move(
     ASource.Bars[0],

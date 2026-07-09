@@ -10,6 +10,8 @@ uses
   Aurora.Audio.FileSignalSource,
   Aurora.Engine,
 Winapi.ActiveX,
+Aurora.Visual.Frame,
+Aurora.Visual.DisplayProcessor,
 WinApi.MediaFoundationApi.MfApi,
   Aurora.Visual.CanvasSpectrum;
 
@@ -27,10 +29,10 @@ type
     FBars: TArray<Single>;
     FPhase: Double;
   FSource : TFileSignalSource;
-
   FEngine : TAuroraSpectrumEngine;
-
   FTempBuffer : TArray<Single>;
+  FDisplayProcessor: TDisplayProcessor;
+  FDisplayFrame: TDisplayFrame;
 
     procedure GenerateDemoBars;
   public
@@ -60,13 +62,14 @@ FSource :=
 
 SetLength(FTempBuffer, 1024 * FSource.ChannelCount);
 
+{
 FEngine :=
   TAuroraSpectrumEngine.Create(
     FSource.SampleRate,
     2048,
     80);
 
- //exit;
+ //exit;  }
 
 
 FEngine :=
@@ -74,6 +77,9 @@ FEngine :=
       FSource.SampleRate,
       2048,
       80);
+
+FDisplayProcessor := TDisplayProcessor.Create(80);
+FDisplayFrame := TDisplayFrame.Create(80);
 
   FRenderer := TCanvasSpectrumRenderer.Create;
 
@@ -128,11 +134,19 @@ begin
   if (FRenderer = nil) or (FEngine = nil) then
     Exit;
 
-  FRenderer.RenderFrame(
+ { FRenderer.RenderFrame(
     PaintBoxSpectrum.Canvas,
     PaintBoxSpectrum.ClientRect,
     FEngine.CurrentFrame
-  );
+  );    }
+
+FRenderer.Render(
+  PaintBoxSpectrum.Canvas,
+  PaintBoxSpectrum.ClientRect,
+  @FDisplayFrame.Bars[0],
+  FDisplayFrame.BarCount
+);
+
 end;
 
 procedure TForm1.TimerSpectrumTimer(Sender: TObject);
@@ -172,17 +186,29 @@ begin
       ]
     );
 
-    PaintBoxSpectrum.Invalidate;
+    //PaintBoxSpectrum.Invalidate;
+
+    FDisplayProcessor.Process(
+    FEngine.CurrentFrame,
+    FDisplayFrame
+    );
+
+   PaintBoxSpectrum.Invalidate;
+
   end;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
+FDisplayProcessor.Free;
 FRenderer.Free;
 FEngine.Free;
 FSource.Free;
 MFShutdown;
 CoUninitialize;
+
+
+
 end;
 
 end.
