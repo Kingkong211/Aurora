@@ -5,12 +5,14 @@ interface
 uses
   Aurora.Core.Frame,
   Aurora.Visual.Frame,
+  Aurora.Analysis.Envelope,
   Aurora.Analysis.PeakHold;
 
 type
   TDisplayProcessor = class
   private
     FPeakHold: TPeakHold;
+    FEnvelope: TEnvelopeFollower;	
 
   public
     constructor Create(
@@ -36,10 +38,17 @@ begin
   FPeakHold := TPeakHold.Create(
     ABarCount,
     0.975);
+	
+ FEnvelope := TEnvelopeFollower.Create(
+  ABarCount,
+  0.50,   // Attack
+  0.12);  // Release
+  
 end;
 
 destructor TDisplayProcessor.Destroy;
 begin
+  FEnvelope.Free;
   FPeakHold.Free;
   inherited;
 end;
@@ -54,21 +63,24 @@ begin
      raise Exception.Create(
      'Display frame size mismatch.');
 
-  Move(
+ { Move(
     ASource.Bars[0],
     ADestination.Bars[0],
-    ASource.BarCount * SizeOf(Single));
+    ASource.BarCount * SizeOf(Single));}
+	
 
   // -------------------------------------------------------
-  // Display pipeline
-  //
-  // Future stages:
-  //   Attack
-  //   Release
-  //   Gamma
-  //   Dynamic Range Mapping
-  //   Glow Curve
+// Display Pipeline
+//
+// 1. Envelope
+// 2. Peak Hold
+// 3. (Future) Gamma
+// 4. (Future) Glow
+// 5. (Future) Theme Mapping
   // -------------------------------------------------------
+  FEnvelope.Process(
+    @ASource.Bars[0],
+    @ADestination.Bars[0]);	
 
   FPeakHold.Process(
     @ADestination.Bars[0],
