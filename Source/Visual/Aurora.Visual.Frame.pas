@@ -22,7 +22,12 @@ type
     PeakBars: TArray<Single>;
 
     class function Create(
-      const ABarCount: Integer): TDisplayFrame; static;
+      const ABarCount: Integer
+    ): TDisplayFrame; static;
+
+    procedure Resize(
+      const ABarCount: Integer
+    );
 
     procedure Clear;
   end;
@@ -32,24 +37,35 @@ implementation
 { TDisplayFrame }
 
 class function TDisplayFrame.Create(
-  const ABarCount: Integer): TDisplayFrame;
+  const ABarCount: Integer
+): TDisplayFrame;
 begin
-  Result.BarCount := ABarCount;
+  Result.BarCount := 0;
+  SetLength(Result.Bars, 0);
+  SetLength(Result.PeakBars, 0);
 
-  SetLength(Result.Bars, ABarCount);
-  SetLength(Result.PeakBars, ABarCount);
-
+  Result.Resize(ABarCount);
   Result.Clear;
+end;
+
+procedure TDisplayFrame.Resize(
+  const ABarCount: Integer
+);
+begin
+  BarCount := ABarCount;
+
+  SetLength(Bars, ABarCount);
+  SetLength(PeakBars, ABarCount);
 end;
 
 procedure TDisplayFrame.Clear;
 var
-  Index: Integer;
+  I: Integer;
 begin
-  for Index := 0 to BarCount - 1 do
+  for I := 0 to BarCount - 1 do
   begin
-    Bars[Index] := 0.0;
-    PeakBars[Index] := 0.0;
+    Bars[I] := 0.0;
+    PeakBars[I] := 0.0;
   end;
 end;
 

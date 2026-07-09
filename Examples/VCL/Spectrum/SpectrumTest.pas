@@ -26,17 +26,12 @@ type
     procedure PaintBoxSpectrumPaint(Sender: TObject);
   private
     { Private declarations }
-    FRenderer: TCanvasSpectrumRenderer;
-    FBars: TArray<Single>;
-    FPhase: Double;
-  FSource : TFileSignalSource;
-  FEngine : TAuroraSpectrumEngine;
-  FTempBuffer : TArray<Single>;
-  FDisplayProcessor: TDisplayProcessor;
-  FDisplayFrame: TDisplayFrame;
-  FAurora: TAuroraVisualRuntime;
+FSource: TFileSignalSource;
+FTempBuffer: TArray<Single>;
+FAurora: TAuroraVisualRuntime;
 
-    procedure GenerateDemoBars;
+
+   // procedure GenerateDemoBars;
   public
     { Public declarations }
   end;
@@ -49,96 +44,63 @@ implementation
 {$R *.dfm}
 
 procedure TForm1.FormCreate(Sender: TObject);
-var
-  Style: TSpectrumStyle;
 begin
+  TimerSpectrum.Enabled := False;
 
-TimerSpectrum.Enabled := False;
-CoInitialize(nil);
-MFStartup(MF_VERSION, MFSTARTUP_FULL);
+  CoInitialize(nil);
+  MFStartup(MF_VERSION, MFSTARTUP_FULL);
 
-FSource :=
-  TFileSignalSource.Create(
-    'D:\Music_At_Work\MacThuy\MacThuy_Bi\ChieuTim.wav');
+  FSource :=
+    TFileSignalSource.Create(
+      'D:\Music_At_Work\MacThuy\MacThuy_Bi\ChieuTim.wav'
+    );
 
-SetLength(FTempBuffer, 1024 * FSource.ChannelCount);
+  SetLength(FTempBuffer, 1024 * FSource.ChannelCount);
 
-
-
-
-FEngine :=
-    TAuroraSpectrumEngine.Create(
+  FAurora :=
+    TAuroraVisualRuntime.Create(
       FSource.SampleRate,
       2048,
-      80);
+      80
+    );
 
-FDisplayProcessor := TDisplayProcessor.Create(80);
-FDisplayFrame := TDisplayFrame.Create(80);
-
-  FRenderer := TCanvasSpectrumRenderer.Create;
-
-  Style := TSpectrumStyle.Default;
-  Style.BarColor := $00C8FF80;
-  Style.BackgroundColor := clBlack;
-  Style.BarSpacing := 3;
-  Style.BarStyle := TSpectrumBarStyle.Blocks;
-  Style.BlockHeight := 5;
-  Style.BlockSpacing := 2;
-
-  FRenderer.Style := Style;
+  FAurora.SetTheme(TSpectrumThemePreset.OkaraDark);
 
   DoubleBuffered := True;
   Color := clBlack;
 
-TimerSpectrum.Interval := 16;
-TimerSpectrum.Enabled := True;
-
+  TimerSpectrum.Interval := 16;
+  TimerSpectrum.Enabled := True;
 end;
 
-procedure TForm1.GenerateDemoBars;
-var
-  Index: Integer;
-  X: Double;
-  Envelope: Double;
-  Wave1: Double;
-  Wave2: Double;
-begin
-  FPhase := FPhase + 0.08;
-
-  for Index := 0 to High(FBars) do
-  begin
-    X := Index / Max(1, High(FBars));
-
-    Envelope := Power(1.0 - X, 0.65);
-    Wave1 := 0.5 + 0.5 * Sin(FPhase + Index * 0.23);
-    Wave2 := 0.5 + 0.5 * Sin(FPhase * 1.7 + Index * 0.071);
-
-    FBars[Index] := Single(Envelope * (0.15 + 0.65 * Wave1 * Wave2));
-
-    if FBars[Index] > 1.0 then
-      FBars[Index] := 1.0;
-  end;
-end;
 
 procedure TForm1.PaintBoxSpectrumPaint(Sender: TObject);
 begin
-  if (FRenderer = nil) or (FDisplayFrame.BarCount <= 0) then
+  if FAurora = nil then
     Exit;
 
-  FRenderer.RenderDisplayFrame(
+  FAurora.Render(
     PaintBoxSpectrum.Canvas,
-    PaintBoxSpectrum.ClientRect,
-    FDisplayFrame
+    PaintBoxSpectrum.ClientRect
   );
 end;
+
 
 procedure TForm1.TimerSpectrumTimer(Sender: TObject);
 var
   FramesRead: Integer;
-  HadFrame: Boolean;
 begin
-// Caption := 'Timer running ' + TimeToStr(Now);
-  FramesRead := FSource.Read(@FTempBuffer[0], 1024);
+  if (FSource = nil) or (FAurora = nil) then
+    Exit;
+
+  if Length(FTempBuffer) = 0 then
+    Exit;
+
+  FramesRead :=
+    FSource.Read(
+      @FTempBuffer[0],
+      1024
+    );
 
   if FramesRead <= 0 then
   begin
@@ -147,51 +109,51 @@ begin
     Exit;
   end;
 
-  FEngine.PushInterleavedFloat32(
-    @FTempBuffer[0],
+  FAurora.PushInterleavedFloat32(
+    FTempBuffer,
     FramesRead,
     FSource.ChannelCount
   );
 
-  HadFrame := False;
-
-  while FEngine.TryProcessFrame do
-    HadFrame := True;
-
-  if HadFrame then
+  {
+  if FAurora.Process then
   begin
     Caption := Format(
       'Frame=%d Peak=%.3f RMS=%.3f',
       [
-        FEngine.CurrentFrame.TimeStamp,
-        FEngine.CurrentFrame.Peak,
-        FEngine.CurrentFrame.RMS
+        FAurora.Engine.CurrentFrame.TimeStamp,
+        FAurora.Engine.CurrentFrame.Peak,
+        FAurora.Engine.CurrentFrame.RMS
       ]
     );
 
-    //PaintBoxSpectrum.Invalidate;
+    PaintBoxSpectrum.Invalidate;
+  end;    }
+ if FAurora.ProcessAvailableFrames then
+begin
+  Caption := Format(
+    'Frame=%d Peak=%.3f RMS=%.3f',
+    [
+      FAurora.Engine.CurrentFrame.TimeStamp,
+      FAurora.Engine.CurrentFrame.Peak,
+      FAurora.Engine.CurrentFrame.RMS
+    ]
+  );
 
-    FDisplayProcessor.Process(
-    FEngine.CurrentFrame,
-    FDisplayFrame
-    );
+  PaintBoxSpectrum.Invalidate;
+end;
 
-   PaintBoxSpectrum.Invalidate;
-
-  end;
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
-FDisplayProcessor.Free;
-FRenderer.Free;
-FEngine.Free;
-FSource.Free;
-MFShutdown;
-CoUninitialize;
+  TimerSpectrum.Enabled := False;
 
+  FAurora.Free;
+  FSource.Free;
 
-
+  MFShutdown;
+  CoUninitialize;
 end;
 
 end.

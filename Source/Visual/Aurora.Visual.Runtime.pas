@@ -37,10 +37,11 @@ type
 
     destructor Destroy; override;
 
-    procedure PushInterleavedFloat32(
-      const ASamples: TArray<Single>;
-      AChannelCount: Integer
-    );
+  procedure PushInterleavedFloat32(
+    const ASamples: TArray<Single>;
+    ASampleFrameCount: Integer;
+    AChannelCount: Integer
+   );
 
     function Process: Boolean;
 
@@ -48,8 +49,11 @@ type
       const ACanvas: TCanvas;
       const ARect: TRect
     );
+	
+   function ProcessAvailableFrames: Boolean;	
 
     procedure Reset;
+    procedure SetTheme(APreset: TSpectrumThemePreset);
 
     property DisplayFrame: TDisplayFrame read FDisplayFrame;
     property Engine: TAuroraSpectrumEngine read FEngine;
@@ -79,11 +83,10 @@ begin
     FBarCount
   );
 
-  FDisplayProcessor := TDisplayProcessor.Create(FBarCount);
-  FRenderer := TCanvasSpectrumRenderer.Create;
+FDisplayProcessor := TDisplayProcessor.Create(FBarCount);
+FRenderer := TCanvasSpectrumRenderer.Create;
 
-  //FRawFrame.BarCount := 0;
-  FDisplayFrame.BarCount := 0;
+FDisplayFrame := TDisplayFrame.Create(FBarCount);
 end;
 
 destructor TAuroraVisualRuntime.Destroy;
@@ -95,29 +98,48 @@ begin
   inherited;
 end;
 
+procedure TAuroraVisualRuntime.SetTheme(
+  APreset: TSpectrumThemePreset
+);
+begin
+  if FRenderer = nil then
+    Exit;
+
+  FRenderer.Style := TSpectrumStyle.FromPreset(APreset);
+end;
+
 procedure TAuroraVisualRuntime.PushInterleavedFloat32(
   const ASamples: TArray<Single>;
+  ASampleFrameCount: Integer;
   AChannelCount: Integer
 );
 var
-  SampleFrameCount: Integer;
+  NeededScalarCount: Integer;
 begin
   if (FEngine = nil) or (AChannelCount <= 0) then
     Exit;
 
-  if Length(ASamples) = 0 then
+  if ASampleFrameCount <= 0 then
     Exit;
 
-  SampleFrameCount := Length(ASamples) div AChannelCount;
+  NeededScalarCount := ASampleFrameCount * AChannelCount;
 
-  if SampleFrameCount <= 0 then
+  if Length(ASamples) < NeededScalarCount then
     Exit;
 
   FEngine.PushInterleavedFloat32(
     @ASamples[0],
-    SampleFrameCount,
+    ASampleFrameCount,
     AChannelCount
   );
+end;
+
+function TAuroraVisualRuntime.ProcessAvailableFrames: Boolean;
+begin
+  Result := False;
+
+  while Process do
+    Result := True;
 end;
 
 function TAuroraVisualRuntime.Process: Boolean;
@@ -129,6 +151,9 @@ begin
 
   if not FEngine.TryProcessFrame then
     Exit;
+
+  if FDisplayFrame.BarCount <> FEngine.BarCount then
+    FDisplayFrame.Resize(FEngine.BarCount);
 
   FDisplayProcessor.Process(
     FEngine.CurrentFrame,
@@ -155,14 +180,19 @@ end;
 
 procedure TAuroraVisualRuntime.Reset;
 begin
-  if FEngine <> nil then
-    FEngine.Free;
+  FreeAndNil(FEngine);
+  FreeAndNil(FDisplayProcessor);
 
-  if FDisplayProcessor <> nil then
-    FDisplayProcessor.Free;// .Reset;
+  FEngine :=
+    TAuroraSpectrumEngine.Create(
+      FSampleRate,
+      FFFTSize,
+      FBarCount
+    );
 
- // FRawFrame.BarCount := 0;
-  FDisplayFrame.BarCount := 0;
+  FDisplayProcessor := TDisplayProcessor.Create(FBarCount);
+
+  FDisplayFrame.Resize(FBarCount);
 end;
 
 end.
