@@ -9,10 +9,11 @@ uses
   Aurora.Visual.Types,
   Aurora.Audio.FileSignalSource,
   Aurora.Engine,
-Winapi.ActiveX,
-Aurora.Visual.Frame,
-Aurora.Visual.DisplayProcessor,
-WinApi.MediaFoundationApi.MfApi,
+  Winapi.ActiveX,
+  Aurora.Visual.Frame,
+  Aurora.Visual.Runtime,
+  Aurora.Visual.DisplayProcessor,
+  WinApi.MediaFoundationApi.MfApi,
   Aurora.Visual.CanvasSpectrum;
 
 type
@@ -33,6 +34,7 @@ type
   FTempBuffer : TArray<Single>;
   FDisplayProcessor: TDisplayProcessor;
   FDisplayFrame: TDisplayFrame;
+  FAurora: TAuroraVisualRuntime;
 
     procedure GenerateDemoBars;
   public

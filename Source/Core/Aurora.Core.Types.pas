@@ -41,7 +41,15 @@ type
     Control,
     Generated
   );
+  
+  TSpectrumFrame = record
+  public
+    BarCount: Integer;
+    Values: TArray<Single>;
 
+    procedure Resize(ABarCount: Integer);
+    procedure Clear;
+  end;
   /// <summary>
   /// Physical sample format before or after conversion.
   /// </summary>
@@ -172,6 +180,18 @@ end;
 function TSignalRegion.EndSampleExclusive: TSampleIndex;
 begin
   Result := StartSample + SampleCount;
+end;
+
+procedure TSpectrumFrame.Resize(ABarCount: Integer);
+begin
+  BarCount := ABarCount;
+  SetLength(Values, ABarCount);
+end;
+
+procedure TSpectrumFrame.Clear;
+begin
+  BarCount := 0;
+  SetLength(Values, 0);
 end;
 
 end.
