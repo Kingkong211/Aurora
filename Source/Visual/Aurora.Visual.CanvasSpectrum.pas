@@ -561,16 +561,46 @@ procedure TCanvasSpectrumRenderer.EnsureBackBuffer(
   const AWidth: Integer;
   const AHeight: Integer
 );
+const
+  MAX_BACKBUFFER_WIDTH  = 4096;
+  MAX_BACKBUFFER_HEIGHT = 2048;
 begin
   if (AWidth <= 0) or (AHeight <= 0) then
     Exit;
 
-  if (FBackBuffer.Width = AWidth) and
+  if (AWidth > MAX_BACKBUFFER_WIDTH) or
+     (AHeight > MAX_BACKBUFFER_HEIGHT) then
+  begin
+    OutputDebugString(PChar(Format(
+      'Aurora Render: skip huge backbuffer %dx%d',
+      [AWidth, AHeight]
+    )));
+    Exit;
+  end;
+
+  if (FBackBuffer <> nil) and
+     (FBackBuffer.Width = AWidth) and
      (FBackBuffer.Height = AHeight) then
     Exit;
 
-  FBackBuffer.SetSize(AWidth, AHeight);
-  FBackBuffer.PixelFormat := pf32bit;
+  try
+    FBackBuffer.SetSize(0, 0);
+    FBackBuffer.PixelFormat := pf32bit;
+    FBackBuffer.SetSize(AWidth, AHeight);
+  except
+    on E: Exception do
+    begin
+      OutputDebugString(PChar(
+        'Aurora Render: bitmap allocation failed: ' +
+        E.ClassName + ' - ' + E.Message
+      ));
+
+      try
+        FBackBuffer.SetSize(0, 0);
+      except
+      end;
+    end;
+  end;
 end;
 
 procedure TCanvasSpectrumRenderer.ClearCanvas(
@@ -596,10 +626,27 @@ begin
   if (ARect.Width <= 0) or (ARect.Height <= 0) then
     Exit;
 
-  EnsureBackBuffer(
-    ARect.Width,
-    ARect.Height
-  );
+   try
+    EnsureBackBuffer(
+      ARect.Width,
+      ARect.Height
+    );
+  except
+    on E: Exception do
+    begin
+      OutputDebugString(PChar(
+        'Aurora Render: EnsureBackBuffer failed: ' +
+        E.ClassName + ' - ' + E.Message
+      ));
+
+      Exit;
+    end;
+  end;
+
+  if (FBackBuffer = nil) or
+     (FBackBuffer.Width <= 0) or
+     (FBackBuffer.Height <= 0) then
+    Exit;
 
   LocalRect := Rect(
     0,
