@@ -120,7 +120,7 @@ begin
     TSpectrumThemePreset.ClassicWinamp:
       begin
         Result.BackgroundColor := clBlack;
-        Result.BarColor := RGB(96, 255, 192);
+        Result.BarColor := RGB(144, 44, 0);
         Result.PeakColor := clWhite;
         Result.PeakMarkerColor := clWhite;
 
@@ -132,20 +132,20 @@ begin
         Result.PeakMarkerHeight := 2;
         Result.PeakMarkerWidth := 0;
         Result.TopHighlightEnabled := True;
-        Result.TopHighlightColor := RGB(220, 255, 240);
-        Result.TopHighlightRatio := 0.30;	
+        Result.TopHighlightColor := RGB(200, 150, 125);
+        Result.TopHighlightRatio := 0.20;
 
         Result.GlowEnabled := True;
-        Result.GlowColor := RGB(80, 255, 180);
+        Result.GlowColor := RGB(240, 20, 238);
         Result.GlowIntensity := 0.24;
-        Result.GlowHeightRatio := 0.50;		
+        Result.GlowHeightRatio := 0.40;
 		
       end;
 
     TSpectrumThemePreset.AuroraMint:
       begin
-        Result.BackgroundColor := RGB(4, 10, 12);
-        Result.BarColor := RGB(112, 255, 210);
+        Result.BackgroundColor := clBlack;
+        Result.BarColor := RGB(219, 190, 26);
         Result.PeakColor := RGB(230, 255, 245);
         Result.PeakMarkerColor := RGB(230, 255, 245);
 
@@ -157,8 +157,8 @@ begin
         Result.PeakMarkerHeight := 2;
         Result.PeakMarkerWidth := 0;
         Result.TopHighlightEnabled := True;
-        Result.TopHighlightColor := RGB(210, 255, 240);
-        Result.TopHighlightRatio := 0.15;	
+        Result.TopHighlightColor := RGB(235, 235, 64);
+        Result.TopHighlightRatio := 0.15;
 		
 		//glowing
 		Result.GlowEnabled := True;
@@ -169,7 +169,7 @@ begin
 
     TSpectrumThemePreset.OkaraDark:
       begin
-        Result.BackgroundColor := RGB(7, 9, 14);
+        Result.BackgroundColor := clBlack;
         Result.BarColor := RGB(55, 205, 255);
         Result.PeakColor := RGB(245, 250, 255);
         Result.PeakMarkerColor := RGB(245, 250, 255);
@@ -200,7 +200,7 @@ begin
 
     TSpectrumThemePreset.WaterGrid:
       begin
-        Result.BackgroundColor := RGB(3, 18, 28);
+        Result.BackgroundColor := clBlack;
         Result.BarColor := RGB(70, 190, 255);
         Result.PeakColor := RGB(200, 245, 255);
         Result.PeakMarkerColor := RGB(200, 245, 255);
@@ -224,7 +224,7 @@ begin
 
     TSpectrumThemePreset.StoicAmber:
       begin
-        Result.BackgroundColor := RGB(12, 9, 5);
+        Result.BackgroundColor := clBlack;
         Result.BarColor := RGB(255, 178, 64);
         Result.PeakColor := RGB(255, 235, 185);
         Result.PeakMarkerColor := RGB(255, 235, 185);
