@@ -240,12 +240,12 @@ begin
         Result.MinimumBarHeight := 1;
         Result.TopHighlightEnabled := True;
         Result.TopHighlightColor := RGB(255, 224, 150);
-        Result.TopHighlightRatio := 0.2;	
+        Result.TopHighlightRatio := 0.15;	
 
 	    Result.GlowEnabled := True;
         Result.GlowColor := RGB(255, 145, 36);
         Result.GlowIntensity := 0.26;
-        Result.GlowHeightRatio := 0.45;
+        Result.GlowHeightRatio := 0.24;
       end;
 
   end;
