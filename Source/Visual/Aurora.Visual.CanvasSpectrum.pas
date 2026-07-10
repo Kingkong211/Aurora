@@ -13,13 +13,13 @@ uses
 type
   TCanvasSpectrumRenderer = class
   private
-    FStyle: TSpectrumStyle;
-    FBackBuffer: TBitmap;
+  FStyle: TSpectrumStyle;
+  FBackBuffer: TBitmap;
 
-    procedure EnsureBackBuffer(
-      const AWidth: Integer;
-      const AHeight: Integer
-    );
+  procedure EnsureBackBuffer(
+    const AWidth: Integer;
+    const AHeight: Integer
+  );
 
     procedure ClearCanvas(
       const ACanvas: TCanvas;
@@ -106,12 +106,12 @@ begin
   if (AWidth <= 0) or (AHeight <= 0) then
     Exit;
 
-  if (FBackBuffer.Width <> AWidth) or
-     (FBackBuffer.Height <> AHeight) then
-  begin
-    FBackBuffer.SetSize(AWidth, AHeight);
-    FBackBuffer.PixelFormat := pf32bit;
-  end;
+  if (FBackBuffer.Width = AWidth) and
+     (FBackBuffer.Height = AHeight) then
+    Exit;
+
+  FBackBuffer.SetSize(AWidth, AHeight);
+  FBackBuffer.PixelFormat := pf32bit;
 end;
 
 procedure TCanvasSpectrumRenderer.ClearCanvas(
@@ -149,10 +149,12 @@ begin
     FBackBuffer.Height
   );
 
-  ClearCanvas(
-    FBackBuffer.Canvas,
-    LocalRect
-  );
+  // Clear nền trong bitmap, không clear trực tiếp PaintBox
+  FBackBuffer.Canvas.Brush.Style := bsSolid;
+  FBackBuffer.Canvas.Brush.Color := FStyle.BackgroundColor;
+  FBackBuffer.Canvas.Pen.Style := psClear;
+  FBackBuffer.Canvas.FillRect(LocalRect);
+  FBackBuffer.Canvas.Pen.Style := psSolid;
 
   if (AFrame.BarCount > 0) and
      (Length(AFrame.Bars) >= AFrame.BarCount) then
@@ -173,6 +175,7 @@ begin
     end;
   end;
 
+  // Blit một phát ra PaintBox
   ACanvas.Draw(
     ARect.Left,
     ARect.Top,
