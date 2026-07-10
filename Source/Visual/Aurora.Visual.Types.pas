@@ -59,6 +59,9 @@ type
     MarginBottom: Integer;
 
     MinimumBarHeight: Integer;	
+    TopHighlightEnabled: Boolean;
+    TopHighlightColor: TColor;
+    TopHighlightRatio: Single;	
 
     class function Default: TSpectrumStyle; static;
   class function FromPreset(
@@ -90,6 +93,9 @@ begin
   Result.MarginBottom := 2;
 
   Result.MinimumBarHeight := 1;  
+  Result.TopHighlightEnabled := True;
+  Result.TopHighlightColor := clWhite;
+  Result.TopHighlightRatio := 0.22;  
 end;
 
 class function TSpectrumStyle.FromPreset(
@@ -114,6 +120,10 @@ begin
         Result.PeakMarkerEnabled := True;
         Result.PeakMarkerHeight := 2;
         Result.PeakMarkerWidth := 0;
+        Result.TopHighlightEnabled := True;
+        Result.TopHighlightColor := RGB(220, 255, 240);
+        Result.TopHighlightRatio := 0.30;		
+		
       end;
 
     TSpectrumThemePreset.AuroraMint:
@@ -130,6 +140,9 @@ begin
         Result.PeakMarkerEnabled := True;
         Result.PeakMarkerHeight := 2;
         Result.PeakMarkerWidth := 0;
+        Result.TopHighlightEnabled := True;
+        Result.TopHighlightColor := RGB(210, 255, 240);
+        Result.TopHighlightRatio := 0.32;		
       end;
 
     TSpectrumThemePreset.OkaraDark:
@@ -153,6 +166,9 @@ begin
         Result.MarginBottom := 2;
 
         Result.MinimumBarHeight := 1;
+        Result.TopHighlightEnabled := True;
+        Result.TopHighlightColor := RGB(160, 240, 255);
+        Result.TopHighlightRatio := 0.4;		
       end;
 
     TSpectrumThemePreset.WaterGrid:
@@ -169,6 +185,9 @@ begin
         Result.PeakMarkerEnabled := True;
         Result.PeakMarkerHeight := 2;
         Result.PeakMarkerWidth := 0;
+        Result.TopHighlightEnabled := True;
+        Result.TopHighlightColor := RGB(185, 240, 255);
+        Result.TopHighlightRatio := 0.3;		
       end;
 
     TSpectrumThemePreset.StoicAmber:
@@ -187,6 +206,9 @@ begin
         Result.MarginBottom := 3;
         Result.PeakMarkerHeight := 2;
         Result.MinimumBarHeight := 1;
+        Result.TopHighlightEnabled := True;
+        Result.TopHighlightColor := RGB(255, 224, 150);
+        Result.TopHighlightRatio := 0.4;		
       end;
 
   end;

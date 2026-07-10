@@ -32,6 +32,11 @@ type
     FCacheStartX: Integer;
 	FBarLayout: TArray<TBarLayoutItem>;
 
+    procedure FillBarRect(
+      const ACanvas: TCanvas;
+      const ARect: TRect;
+      const AHeight: Integer
+    );
     procedure InvalidateLayout;
 
     procedure SetStyle(
@@ -115,6 +120,48 @@ begin
   FBackBuffer.Free;
 
   inherited;
+end;
+
+//highlight top bar
+procedure TCanvasSpectrumRenderer.FillBarRect(
+  const ACanvas: TCanvas;
+  const ARect: TRect;
+  const AHeight: Integer
+);
+var
+  HighlightHeight: Integer;
+  HighlightRect: TRect;
+begin
+  if (ARect.Width <= 0) or (ARect.Height <= 0) then
+    Exit;
+
+  ACanvas.Brush.Color := FStyle.BarColor;
+  ACanvas.FillRect(ARect);
+
+  if not FStyle.TopHighlightEnabled then
+    Exit;
+
+  if AHeight < 8 then
+    Exit;
+
+  HighlightHeight :=
+    Round(AHeight * FStyle.TopHighlightRatio);
+
+  if HighlightHeight < 2 then
+    HighlightHeight := 2;
+
+  if HighlightHeight > ARect.Height then
+    HighlightHeight := ARect.Height;
+
+  HighlightRect := Rect(
+    ARect.Left,
+    ARect.Top,
+    ARect.Right,
+    ARect.Top + HighlightHeight
+  );
+
+  ACanvas.Brush.Color := FStyle.TopHighlightColor;
+  ACanvas.FillRect(HighlightRect);
 end;
 
 procedure TCanvasSpectrumRenderer.InvalidateLayout;
@@ -359,7 +406,11 @@ begin
       FCacheWorkRect.Bottom
     );
 
-    ACanvas.FillRect(R);
+   FillBarRect(
+      ACanvas,
+      R,
+      H
+   );
   end;
 
   ACanvas.Pen.Style := psSolid;
@@ -437,6 +488,13 @@ begin
         FBarLayout[Index].Right,
         Y + BlockHeight
       );
+
+      if FStyle.TopHighlightEnabled and
+         (H >= 8) and
+         (Y <= MinY + Round(H * FStyle.TopHighlightRatio)) then
+        ACanvas.Brush.Color := FStyle.TopHighlightColor
+      else
+        ACanvas.Brush.Color := FStyle.BarColor;
 
       ACanvas.FillRect(R);
 
