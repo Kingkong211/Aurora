@@ -158,7 +158,7 @@ begin
         Result.PeakMarkerWidth := 0;
         Result.TopHighlightEnabled := True;
         Result.TopHighlightColor := RGB(210, 255, 240);
-        Result.TopHighlightRatio := 0.32;	
+        Result.TopHighlightRatio := 0.15;	
 		
 		//glowing
 		Result.GlowEnabled := True;
@@ -190,7 +190,7 @@ begin
         Result.MinimumBarHeight := 1;
         Result.TopHighlightEnabled := True;
         Result.TopHighlightColor := RGB(160, 240, 255);
-        Result.TopHighlightRatio := 0.4;
+        Result.TopHighlightRatio := 0.2;
 
 		Result.GlowEnabled := True;
         Result.GlowColor := RGB(40, 180, 255);
@@ -214,7 +214,7 @@ begin
         Result.PeakMarkerWidth := 0;
         Result.TopHighlightEnabled := True;
         Result.TopHighlightColor := RGB(185, 240, 255);
-        Result.TopHighlightRatio := 0.3;
+        Result.TopHighlightRatio := 0.18;
 		
         Result.GlowEnabled := True;
         Result.GlowColor := RGB(50, 190, 255);
@@ -240,12 +240,12 @@ begin
         Result.MinimumBarHeight := 1;
         Result.TopHighlightEnabled := True;
         Result.TopHighlightColor := RGB(255, 224, 150);
-        Result.TopHighlightRatio := 0.4;	
+        Result.TopHighlightRatio := 0.2;	
 
-        Result.GlowEnabled := True;
-        Result.GlowColor := RGB(255, 150, 40);
-        Result.GlowIntensity := 0.24;
-        Result.GlowHeightRatio := 0.55;		
+	    Result.GlowEnabled := True;
+        Result.GlowColor := RGB(255, 145, 36);
+        Result.GlowIntensity := 0.26;
+        Result.GlowHeightRatio := 0.45;
       end;
 
   end;

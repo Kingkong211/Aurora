@@ -1,4 +1,4 @@
-unit Aurora.Visual.CanvasSpectrum;
+﻿unit Aurora.Visual.CanvasSpectrum;
 
 interface
 
@@ -6,8 +6,9 @@ uses
   System.SysUtils,
   System.Types,
   System.Math,
-  Vcl.Graphics,
+
   Winapi.Windows,
+  Vcl.Graphics,
   Aurora.Visual.Types,
   Aurora.Visual.Frame;
 
@@ -21,7 +22,7 @@ type
   TCanvasSpectrumRenderer = class
   private
     FStyle: TSpectrumStyle;
-    FBackBuffer: TBitmap;
+    FBackBuffer: Vcl.Graphics.TBitmap;
     FLayoutDirty: Boolean;
     FCacheWidth: Integer;
     FCacheHeight: Integer;
@@ -63,6 +64,11 @@ type
     procedure EnsureLayout(
       const ARect: TRect;
       const ABarCount: Integer
+    );
+
+    procedure RenderBarAura(
+      const ACanvas: TCanvas;
+      const AFrame: TDisplayFrame
     );
 
   procedure EnsureBackBuffer(
@@ -123,7 +129,7 @@ begin
 
   FStyle := TSpectrumStyle.Default;
 
-  FBackBuffer := TBitmap.Create;
+  FBackBuffer := Vcl.Graphics.TBitmap.Create;
   FBackBuffer.PixelFormat := pf32bit;
 
   FLayoutDirty := True;
@@ -366,6 +372,97 @@ begin
   InvalidateLayout;
 end;
 
+procedure TCanvasSpectrumRenderer.RenderBarAura(
+  const ACanvas: TCanvas;
+  const AFrame: TDisplayFrame
+);
+var
+  Index: Integer;
+  H: Integer;
+  MaxHeight: Integer;
+  V: Single;
+  GlowAmount: Single;
+  ROuter: TRect;
+  RInner: TRect;
+  ExtraX: Integer;
+  ExtraY: Integer;
+begin
+  if not FStyle.GlowEnabled then
+    Exit;
+
+  if AFrame.BarCount <= 0 then
+    Exit;
+
+  if Length(FBarLayout) < AFrame.BarCount then
+    Exit;
+
+  if Length(AFrame.Bars) < AFrame.BarCount then
+    Exit;
+
+  MaxHeight := FCacheWorkRect.Height;
+
+  if MaxHeight <= 0 then
+    Exit;
+
+  ACanvas.Brush.Style := bsSolid;
+  ACanvas.Pen.Style := psClear;
+
+  ExtraX := 2;
+  ExtraY := 3;
+
+  for Index := 0 to AFrame.BarCount - 1 do
+  begin
+    V := Clamp01(AFrame.Bars[Index]);
+
+    if V <= 0.04 then
+      Continue;
+
+    H := Round(V * MaxHeight);
+
+    if H <= 0 then
+      Continue;
+
+    GlowAmount :=
+      FStyle.GlowIntensity * (0.25 + 0.75 * V);
+
+    if GlowAmount > 0.65 then
+      GlowAmount := 0.65;
+
+    ROuter := Rect(
+      FBarLayout[Index].Left - ExtraX,
+      FCacheWorkRect.Bottom - H - ExtraY,
+      FBarLayout[Index].Right + ExtraX,
+      FCacheWorkRect.Bottom
+    );
+
+    RInner := Rect(
+      FBarLayout[Index].Left - 1,
+      FCacheWorkRect.Bottom - H - 1,
+      FBarLayout[Index].Right + 1,
+      FCacheWorkRect.Bottom
+    );
+
+    ACanvas.Brush.Color :=
+      BlendColor(
+        FStyle.BackgroundColor,
+        FStyle.GlowColor,
+        GlowAmount * 0.45
+      );
+
+    ACanvas.FillRect(ROuter);
+
+    ACanvas.Brush.Color :=
+      BlendColor(
+        FStyle.BackgroundColor,
+        FStyle.GlowColor,
+        GlowAmount * 0.75
+      );
+
+    ACanvas.FillRect(RInner);
+  end;
+
+  ACanvas.Pen.Style := psSolid;
+end;
 procedure TCanvasSpectrumRenderer.EnsureLayout(
   const ARect: TRect;
   const ABarCount: Integer
@@ -511,26 +608,30 @@ begin
     FBackBuffer.Height
   );
 
-  // Clear nền trong bitmap, không clear trực tiếp PaintBox
-  FBackBuffer.Canvas.Brush.Style := bsSolid;
-  FBackBuffer.Canvas.Brush.Color := FStyle.BackgroundColor;
-  FBackBuffer.Canvas.Pen.Style := psClear;
-  FBackBuffer.Canvas.FillRect(LocalRect);
-  FBackBuffer.Canvas.Pen.Style := psSolid;
-  
   ClearCanvas(
     FBackBuffer.Canvas,
     LocalRect
-  );  
-  RenderBackgroundGlow(
-    FBackBuffer.Canvas,
-    LocalRect,
-    AFrame
-  );  
+  );
 
   if (AFrame.BarCount > 0) and
      (Length(AFrame.Bars) >= AFrame.BarCount) then
   begin
+    EnsureLayout(
+      LocalRect,
+      AFrame.BarCount
+    );
+
+    RenderBackgroundGlow(
+      FBackBuffer.Canvas,
+      LocalRect,
+      AFrame
+    );
+
+    RenderBarAura(
+      FBackBuffer.Canvas,
+      AFrame
+    );
+
     case FStyle.BarStyle of
       TSpectrumBarStyle.Blocks:
         RenderBlockBars(
@@ -546,14 +647,15 @@ begin
       );
     end;
   end;
-
-  // Blit một phát ra PaintBox
+ // abc;
+  
   ACanvas.Draw(
     ARect.Left,
     ARect.Top,
     FBackBuffer
   );
 end;
+
 procedure TCanvasSpectrumRenderer.RenderSolidBars(
   const ACanvas: TCanvas;
   const ARect: TRect;
