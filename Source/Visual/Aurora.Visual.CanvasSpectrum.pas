@@ -7,6 +7,7 @@ uses
   System.Types,
   System.Math,
   Vcl.Graphics,
+  Winapi.Windows,
   Aurora.Visual.Types,
   Aurora.Visual.Frame;
 
@@ -19,8 +20,8 @@ type
 
   TCanvasSpectrumRenderer = class
   private
-  FStyle: TSpectrumStyle;
-  FBackBuffer: TBitmap;
+    FStyle: TSpectrumStyle;
+    FBackBuffer: TBitmap;
     FLayoutDirty: Boolean;
     FCacheWidth: Integer;
     FCacheHeight: Integer;
@@ -31,6 +32,22 @@ type
     FCacheTotalWidth: Integer;
     FCacheStartX: Integer;
 	FBarLayout: TArray<TBarLayoutItem>;
+	
+    function BlendColor(
+      const ABaseColor: TColor;
+      const AGlowColor: TColor;
+      const AAmount: Single
+    ): TColor;
+
+    function ComputeFrameEnergy(
+      const AFrame: TDisplayFrame
+    ): Single;
+
+    procedure RenderBackgroundGlow(
+      const ACanvas: TCanvas;
+      const ARect: TRect;
+      const AFrame: TDisplayFrame
+    );	
 
     procedure FillBarRect(
       const ACanvas: TCanvas;
@@ -120,6 +137,178 @@ begin
   FBackBuffer.Free;
 
   inherited;
+end;
+
+function TCanvasSpectrumRenderer.BlendColor(
+  const ABaseColor: TColor;
+  const AGlowColor: TColor;
+  const AAmount: Single
+): TColor;
+var
+  BaseRGB: TColor;
+  GlowRGB: TColor;
+  Amount: Single;
+  R: Integer;
+  G: Integer;
+  B: Integer;
+begin
+  Amount := AAmount;
+
+  if Amount < 0.0 then
+    Amount := 0.0
+  else if Amount > 1.0 then
+    Amount := 1.0;
+
+  BaseRGB := ColorToRGB(ABaseColor);
+  GlowRGB := ColorToRGB(AGlowColor);
+
+  R :=
+    Round(
+      GetRValue(BaseRGB) * (1.0 - Amount) +
+      GetRValue(GlowRGB) * Amount
+    );
+
+  G :=
+    Round(
+      GetGValue(BaseRGB) * (1.0 - Amount) +
+      GetGValue(GlowRGB) * Amount
+    );
+
+  B :=
+    Round(
+      GetBValue(BaseRGB) * (1.0 - Amount) +
+      GetBValue(GlowRGB) * Amount
+    );
+
+  Result := RGB(R, G, B);
+end;
+
+function TCanvasSpectrumRenderer.ComputeFrameEnergy(
+  const AFrame: TDisplayFrame
+): Single;
+var
+  I: Integer;
+  Sum: Double;
+  V: Single;
+begin
+  Result := 0.0;
+
+  if (AFrame.BarCount <= 0) or
+     (Length(AFrame.Bars) < AFrame.BarCount) then
+    Exit;
+
+  Sum := 0.0;
+
+  for I := 0 to AFrame.BarCount - 1 do
+  begin
+    V := Clamp01(AFrame.Bars[I]);
+    Sum := Sum + V * V;
+  end;
+
+  Result :=
+    Sqrt(Sum / AFrame.BarCount);
+
+  if Result > 1.0 then
+    Result := 1.0;
+end;
+
+procedure TCanvasSpectrumRenderer.RenderBackgroundGlow(
+  const ACanvas: TCanvas;
+  const ARect: TRect;
+  const AFrame: TDisplayFrame
+);
+var
+  Energy: Single;
+  GlowAmount: Single;
+  GlowHeight: Integer;
+  BandHeight: Integer;
+  BottomY: Integer;
+  R1: TRect;
+  R2: TRect;
+  R3: TRect;
+begin
+  if not FStyle.GlowEnabled then
+    Exit;
+
+  if (ARect.Width <= 0) or (ARect.Height <= 0) then
+    Exit;
+
+  Energy := ComputeFrameEnergy(AFrame);
+
+  if Energy <= 0.01 then
+    Exit;
+
+  GlowAmount :=
+    FStyle.GlowIntensity * (0.35 + 0.65 * Energy);
+
+  GlowHeight :=
+    Round(ARect.Height * FStyle.GlowHeightRatio);
+
+  if GlowHeight < 4 then
+    Exit;
+
+  if GlowHeight > ARect.Height then
+    GlowHeight := ARect.Height;
+
+  BottomY := ARect.Bottom;
+
+  BandHeight := GlowHeight div 3;
+
+  if BandHeight <= 0 then
+    Exit;
+
+  R1 := Rect(
+    ARect.Left,
+    BottomY - BandHeight,
+    ARect.Right,
+    BottomY
+  );
+
+  R2 := Rect(
+    ARect.Left,
+    BottomY - BandHeight * 2,
+    ARect.Right,
+    BottomY - BandHeight
+  );
+
+  R3 := Rect(
+    ARect.Left,
+    BottomY - GlowHeight,
+    ARect.Right,
+    BottomY - BandHeight * 2
+  );
+
+  ACanvas.Brush.Style := bsSolid;
+  ACanvas.Pen.Style := psClear;
+
+  // gần chân bar sáng nhất
+  ACanvas.Brush.Color :=
+    BlendColor(
+      FStyle.BackgroundColor,
+      FStyle.GlowColor,
+      GlowAmount
+    );
+  ACanvas.FillRect(R1);
+
+  // giữa dịu hơn
+  ACanvas.Brush.Color :=
+    BlendColor(
+      FStyle.BackgroundColor,
+      FStyle.GlowColor,
+      GlowAmount * 0.55
+    );
+  ACanvas.FillRect(R2);
+
+  // trên cùng rất nhẹ
+  ACanvas.Brush.Color :=
+    BlendColor(
+      FStyle.BackgroundColor,
+      FStyle.GlowColor,
+      GlowAmount * 0.25
+    );
+  ACanvas.FillRect(R3);
+
+  ACanvas.Pen.Style := psSolid;
 end;
 
 //highlight top bar
@@ -328,6 +517,16 @@ begin
   FBackBuffer.Canvas.Pen.Style := psClear;
   FBackBuffer.Canvas.FillRect(LocalRect);
   FBackBuffer.Canvas.Pen.Style := psSolid;
+  
+  ClearCanvas(
+    FBackBuffer.Canvas,
+    LocalRect
+  );  
+  RenderBackgroundGlow(
+    FBackBuffer.Canvas,
+    LocalRect,
+    AFrame
+  );  
 
   if (AFrame.BarCount > 0) and
      (Length(AFrame.Bars) >= AFrame.BarCount) then

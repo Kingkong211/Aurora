@@ -62,6 +62,11 @@ type
     TopHighlightEnabled: Boolean;
     TopHighlightColor: TColor;
     TopHighlightRatio: Single;	
+	//glowing 
+    GlowEnabled: Boolean;
+    GlowColor: TColor;
+    GlowIntensity: Single;
+    GlowHeightRatio: Single;	
 
     class function Default: TSpectrumStyle; static;
   class function FromPreset(
@@ -96,6 +101,12 @@ begin
   Result.TopHighlightEnabled := True;
   Result.TopHighlightColor := clWhite;
   Result.TopHighlightRatio := 0.22;  
+  //glowing
+  Result.GlowEnabled := True;
+  Result.GlowColor := RGB(80, 200, 255);
+  Result.GlowIntensity := 0.16;
+  Result.GlowHeightRatio := 0.55;
+  
 end;
 
 class function TSpectrumStyle.FromPreset(
@@ -122,7 +133,12 @@ begin
         Result.PeakMarkerWidth := 0;
         Result.TopHighlightEnabled := True;
         Result.TopHighlightColor := RGB(220, 255, 240);
-        Result.TopHighlightRatio := 0.30;		
+        Result.TopHighlightRatio := 0.30;	
+
+        Result.GlowEnabled := True;
+        Result.GlowColor := RGB(80, 255, 180);
+        Result.GlowIntensity := 0.24;
+        Result.GlowHeightRatio := 0.50;		
 		
       end;
 
@@ -142,7 +158,13 @@ begin
         Result.PeakMarkerWidth := 0;
         Result.TopHighlightEnabled := True;
         Result.TopHighlightColor := RGB(210, 255, 240);
-        Result.TopHighlightRatio := 0.32;		
+        Result.TopHighlightRatio := 0.32;	
+		
+		//glowing
+		Result.GlowEnabled := True;
+        Result.GlowColor := RGB(90, 255, 210);
+        Result.GlowIntensity := 0.2;
+        Result.GlowHeightRatio := 0.55;
       end;
 
     TSpectrumThemePreset.OkaraDark:
@@ -168,7 +190,12 @@ begin
         Result.MinimumBarHeight := 1;
         Result.TopHighlightEnabled := True;
         Result.TopHighlightColor := RGB(160, 240, 255);
-        Result.TopHighlightRatio := 0.4;		
+        Result.TopHighlightRatio := 0.4;
+
+		Result.GlowEnabled := True;
+        Result.GlowColor := RGB(40, 180, 255);
+        Result.GlowIntensity := 0.18;
+        Result.GlowHeightRatio := 0.55;
       end;
 
     TSpectrumThemePreset.WaterGrid:
@@ -187,7 +214,12 @@ begin
         Result.PeakMarkerWidth := 0;
         Result.TopHighlightEnabled := True;
         Result.TopHighlightColor := RGB(185, 240, 255);
-        Result.TopHighlightRatio := 0.3;		
+        Result.TopHighlightRatio := 0.3;
+		
+        Result.GlowEnabled := True;
+        Result.GlowColor := RGB(50, 190, 255);
+        Result.GlowIntensity := 0.16;
+        Result.GlowHeightRatio := 0.60;		
       end;
 
     TSpectrumThemePreset.StoicAmber:
@@ -208,7 +240,12 @@ begin
         Result.MinimumBarHeight := 1;
         Result.TopHighlightEnabled := True;
         Result.TopHighlightColor := RGB(255, 224, 150);
-        Result.TopHighlightRatio := 0.4;		
+        Result.TopHighlightRatio := 0.4;	
+
+        Result.GlowEnabled := True;
+        Result.GlowColor := RGB(255, 150, 40);
+        Result.GlowIntensity := 0.24;
+        Result.GlowHeightRatio := 0.55;		
       end;
 
   end;
