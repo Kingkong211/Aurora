@@ -92,9 +92,9 @@ begin
   Result.PeakMarkerColor := TColors.White;
   Result.PeakMarkerHeight := 3;
   Result.PeakMarkerWidth := 0;   // 0 = cùng chiều rộng với bar
-  Result.MarginLeft := 2;
+  Result.MarginLeft := 0;
   Result.MarginTop := 2;
-  Result.MarginRight := 2;
+  Result.MarginRight := 0;
   Result.MarginBottom := 2;
 
   Result.MinimumBarHeight := 1;  
@@ -127,9 +127,9 @@ begin
         Result.BarSpacing := 2;
         Result.BlockHeight := 4;
         Result.BlockSpacing := 2;
-        Result.MarginLeft := 1;
+        Result.MarginLeft := 0;
         Result.MarginTop := 2;
-        Result.MarginRight := 1;
+        Result.MarginRight := 0;
         Result.MarginBottom := 3;
         Result.PeakMarkerHeight := 2;
         Result.MinimumBarHeight := 1;
@@ -236,9 +236,9 @@ begin
         Result.BarSpacing := 2;
         Result.BlockHeight := 4;
         Result.BlockSpacing := 2;
-        Result.MarginLeft := 1;
+        Result.MarginLeft := 0;
         Result.MarginTop := 2;
-        Result.MarginRight := 1;
+        Result.MarginRight := 0;
         Result.MarginBottom := 3;
         Result.PeakMarkerHeight := 2;
         Result.MinimumBarHeight := 1;

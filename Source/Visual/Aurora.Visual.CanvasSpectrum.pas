@@ -463,6 +463,8 @@ begin
 
   ACanvas.Pen.Style := psSolid;
 end;
+
+{
 procedure TCanvasSpectrumRenderer.EnsureLayout(
   const ARect: TRect;
   const ABarCount: Integer
@@ -542,7 +544,111 @@ begin
   end;
 
   FLayoutDirty := False;
+end;}
+
+procedure TCanvasSpectrumRenderer.EnsureLayout(
+  const ARect: TRect;
+  const ABarCount: Integer
+);
+var
+  Spacing: Integer;
+  AvailableWidth: Integer;
+  Index: Integer;
+  BarLeft: Integer;
+  BarRight: Integer;
+begin
+  if ABarCount <= 0 then
+  begin
+    SetLength(FBarLayout, 0);
+    FCacheBarCount := 0;
+    Exit;
+  end;
+
+  if (not FLayoutDirty) and
+     (FCacheWidth = ARect.Width) and
+     (FCacheHeight = ARect.Height) and
+     (FCacheBarCount = ABarCount) then
+    Exit;
+
+  FCacheWidth := ARect.Width;
+  FCacheHeight := ARect.Height;
+  FCacheBarCount := ABarCount;
+
+  FCacheWorkRect := Rect(
+    ARect.Left + FStyle.MarginLeft,
+    ARect.Top + FStyle.MarginTop,
+    ARect.Right - FStyle.MarginRight,
+    ARect.Bottom - FStyle.MarginBottom
+  );
+
+  SetLength(FBarLayout, 0);
+
+  if (FCacheWorkRect.Width <= 0) or
+     (FCacheWorkRect.Height <= 0) then
+  begin
+    FLayoutDirty := False;
+    Exit;
+  end;
+
+  Spacing := Max(0, FStyle.BarSpacing);
+
+  // Nếu PaintBox quá hẹp, tự giảm spacing.
+  if ABarCount > 1 then
+  begin
+    if FCacheWorkRect.Width <
+       ABarCount + ((ABarCount - 1) * Spacing) then
+      Spacing :=
+        Max(
+          0,
+          (FCacheWorkRect.Width - ABarCount) div
+          (ABarCount - 1)
+        );
+  end
+  else
+    Spacing := 0;
+
+  AvailableWidth :=
+    FCacheWorkRect.Width -
+    ((ABarCount - 1) * Spacing);
+
+  if AvailableWidth < ABarCount then
+  begin
+    FLayoutDirty := False;
+    Exit;
+  end;
+
+  // Chỉ giữ để tương thích với các hàm render cũ.
+  FCacheBarWidth :=
+    Max(1, AvailableWidth div ABarCount);
+
+  // Layout mới luôn sử dụng toàn bộ chiều rộng.
+  FCacheTotalWidth := FCacheWorkRect.Width;
+  FCacheStartX := FCacheWorkRect.Left;
+
+  SetLength(FBarLayout, ABarCount);
+
+  for Index := 0 to ABarCount - 1 do
+  begin
+    // Phân phối pixel dư cho các bar thay vì để thành margin.
+    BarLeft :=
+      FCacheWorkRect.Left +
+      ((Index * AvailableWidth) div ABarCount) +
+      (Index * Spacing);
+
+    BarRight :=
+      FCacheWorkRect.Left +
+      (((Index + 1) * AvailableWidth) div ABarCount) +
+      (Index * Spacing);
+
+    FBarLayout[Index].Left := BarLeft;
+    FBarLayout[Index].Right := BarRight;
+    FBarLayout[Index].CenterX :=
+      BarLeft + ((BarRight - BarLeft) div 2);
+  end;
+
+  FLayoutDirty := False;
 end;
+
 
 function TCanvasSpectrumRenderer.Clamp01(
   const AValue: Single
