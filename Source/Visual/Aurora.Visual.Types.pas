@@ -120,20 +120,22 @@ begin
     TSpectrumThemePreset.ClassicWinamp:
       begin
         Result.BackgroundColor := clBlack;
-        Result.BarColor := RGB(144, 44, 0);
+        Result.BarColor := RGB(112, 64, 64);
         Result.PeakColor := clWhite;
         Result.PeakMarkerColor := clWhite;
 
         Result.BarSpacing := 2;
         Result.BlockHeight := 4;
         Result.BlockSpacing := 2;
-
-        Result.PeakMarkerEnabled := True;
+        Result.MarginLeft := 1;
+        Result.MarginTop := 2;
+        Result.MarginRight := 1;
+        Result.MarginBottom := 3;
         Result.PeakMarkerHeight := 2;
-        Result.PeakMarkerWidth := 0;
+        Result.MinimumBarHeight := 1;
         Result.TopHighlightEnabled := True;
-        Result.TopHighlightColor := RGB(200, 150, 125);
-        Result.TopHighlightRatio := 0.20;
+        Result.TopHighlightColor := RGB(166, 131, 131);
+        Result.TopHighlightRatio := 0.15;
 
         Result.GlowEnabled := True;
         Result.GlowColor := RGB(240, 20, 238);
@@ -152,12 +154,14 @@ begin
         Result.BarSpacing := 2;
         Result.BlockHeight := 4;
         Result.BlockSpacing := 2;
-
-        Result.PeakMarkerEnabled := True;
+        Result.MarginLeft := 1;
+        Result.MarginTop := 2;
+        Result.MarginRight := 1;
+        Result.MarginBottom := 3;
         Result.PeakMarkerHeight := 2;
-        Result.PeakMarkerWidth := 0;
+        Result.MinimumBarHeight := 1;
         Result.TopHighlightEnabled := True;
-        Result.TopHighlightColor := RGB(235, 235, 64);
+        Result.TopHighlightColor := RGB(255, 224, 150);
         Result.TopHighlightRatio := 0.15;
 		
 		//glowing
@@ -232,9 +236,9 @@ begin
         Result.BarSpacing := 2;
         Result.BlockHeight := 4;
         Result.BlockSpacing := 2;
-        Result.MarginLeft := 2;
+        Result.MarginLeft := 1;
         Result.MarginTop := 2;
-        Result.MarginRight := 2;
+        Result.MarginRight := 1;
         Result.MarginBottom := 3;
         Result.PeakMarkerHeight := 2;
         Result.MinimumBarHeight := 1;

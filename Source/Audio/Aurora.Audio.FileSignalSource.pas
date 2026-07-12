@@ -15,7 +15,6 @@ interface
 {$SCOPEDENUMS ON}
 
 uses
-  Aurora.Core.Buffer,
   Aurora.Audio.MediaFoundation.Decoder,
   System.SysUtils,
   System.Math,
@@ -25,14 +24,14 @@ type
   TFileSignalSource = class
   private
     FDecoder: TMFAudioDecoder;
-    FBuffer: TSignalBuffer;
+    FSampleCount: Integer;
     FPosition: Integer;
   public
     constructor Create(const AFileName: string);
     destructor Destroy; override;
 
     function Read(
-      const ADestination: PSingle;
+      const ADestination: System.PSingle;
       const ASampleFrameCount: Integer): Integer;
 
     function SampleRate: Integer;
@@ -55,29 +54,37 @@ type
 { TFileSignalSource }
 
 constructor TFileSignalSource.Create(const AFileName: string);
+var
+  EstimatedSamples: Double;
 begin
   inherited Create;
 
   FDecoder := TMFAudioDecoder.Create;
-  FDecoder.OpenFile(AFileName);
-
-  FBuffer := FDecoder.DecodeAll;
-  FPosition := 0;
+  try
+    FDecoder.OpenFile(AFileName);
+    EstimatedSamples :=
+      FDecoder.Info.DurationSeconds * FDecoder.Info.Audio.Signal.SampleRate;
+    if EstimatedSamples > MaxInt then
+      FSampleCount := MaxInt
+    else
+      FSampleCount := Max(0, Round(EstimatedSamples));
+    FPosition := 0;
+  except
+    FDecoder.Free;
+    raise;
+  end;
 end;
 
 destructor TFileSignalSource.Destroy;
 begin
-  FBuffer.Free;
   FDecoder.Free;
 
   inherited;
 end;
 
 function TFileSignalSource.Read(
-  const ADestination: PSingle;
+  const ADestination: System.PSingle;
   const ASampleFrameCount: Integer): Integer;
-var
-  RegionCount: Integer;
 begin
   if ADestination = nil then
     raise EArgumentNilException.Create('Destination pointer must not be nil.');
@@ -88,17 +95,7 @@ begin
   if ASampleFrameCount = 0 then
     Exit(0);
 
-  RegionCount := Min(ASampleFrameCount, FBuffer.SampleCount - FPosition);
-
-  if RegionCount <= 0 then
-    Exit(0);
-
-Result :=
-  FBuffer.ReadFloat32(
-    TSignalRegion.Create(FPosition, RegionCount),
-    ADestination,
-    RegionCount
-  );
+  Result := FDecoder.ReadFrames(ADestination, ASampleFrameCount);
 
   Inc(FPosition, Result);
 end;
@@ -106,13 +103,18 @@ end;
 procedure TFileSignalSource.SeekFrame(
   const AFrameIndex: Integer
 );
+var
+  NewPosition: Integer;
 begin
   if AFrameIndex < 0 then
-    FPosition := 0
-  else if AFrameIndex > FBuffer.SampleCount then
-    FPosition := FBuffer.SampleCount
+    NewPosition := 0
+  else if AFrameIndex > FSampleCount then
+    NewPosition := FSampleCount
   else
-    FPosition := AFrameIndex;
+    NewPosition := AFrameIndex;
+
+  FDecoder.SeekSeconds(NewPosition / SampleRate);
+  FPosition := NewPosition;
 end;
 
 procedure TFileSignalSource.SeekSeconds(
@@ -126,17 +128,17 @@ end;
 
 function TFileSignalSource.SampleRate: Integer;
 begin
-  Result := FBuffer.Descriptor.SampleRate;
+  Result := FDecoder.Info.Audio.Signal.SampleRate;
 end;
 
 function TFileSignalSource.ChannelCount: Integer;
 begin
-  Result := FBuffer.Descriptor.ChannelCount;
+  Result := FDecoder.Info.Audio.Signal.ChannelCount;
 end;
 
 function TFileSignalSource.SampleCount: Integer;
 begin
-  Result := FBuffer.SampleCount;
+  Result := FSampleCount;
 end;
 
 end.
